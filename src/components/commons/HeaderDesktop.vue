@@ -23,7 +23,7 @@ const handleOpenDrawer = () => {
       <el-menu class='menu' mode='horizontal' :ellipsis='false' background-color='#fff' menu-trigger='click'
                :default-active='$route.path' >
         <el-menu-item class='desktop-logo-container no-hover' @click='router.push("/")'>
-          <img src='/logo.svg' class='desktop-logo' alt='logo-app' />
+          <img src='/logo.png' class='desktop-logo' alt='logo-app' />
         </el-menu-item>
 
         <div class='flex-grow'></div>
@@ -40,7 +40,7 @@ const handleOpenDrawer = () => {
       <el-menu class='menu' mode='horizontal' :ellipsis='false' background-color='#fff' menu-trigger='click'
                :default-active='$route.path' router>
         <el-menu-item class='desktop-logo-container no-hover' :route='PATHS.HOME' index='1'>
-          <img src='/logo.svg' class='desktop-logo' alt='logo-app' />
+          <img src='/logo.png' class='desktop-logo' alt='logo-app' />
         </el-menu-item>
         <div class='flex-grow'></div>
         <el-menu-item
