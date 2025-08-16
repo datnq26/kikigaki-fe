@@ -1,9 +1,7 @@
 <script lang="ts" setup></script>
 
 <template>
-    <div class="footer">
-        Footer
-    </div>
+    <div class="footer">Footer</div>
 </template>
 
 <style scoped>

@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { getCurrentUser } from '@/services/user'
-import { logout } from '@/services/auth'
 
 export const useAuthenticationStore = defineStore('authentication', {
     state: () => ({
@@ -24,7 +23,7 @@ export const useAuthenticationStore = defineStore('authentication', {
         },
         async logout() {
             try {
-                await logout().then()
+                // await logout().then()
                 this.userInfo = null
             } catch (e: any) {
                 if (e.response && e.response.status === 401) {

@@ -1,14 +1,20 @@
-import {http} from '@/services/http'
-import {AUTH_API} from '@/constants/api'
+import { http } from '@/services/http'
+import { AUTH_API } from '@/constants/api'
+import { AxiosResponse } from 'axios'
+import { LoginRequest, LoginResponse } from '@/interfaces/auth'
 
-export const login = async (payload: any) => {
-    return await http.post(AUTH_API.LOGIN, payload)
+class AuthService {
+    async login(payload: LoginRequest): Promise<AxiosResponse<LoginResponse>> {
+        return await http.post(AUTH_API.LOGIN, payload)
+    }
+
+    async register(payload: any): Promise<AxiosResponse<LoginResponse>> {
+        return await http.post(AUTH_API.REGISTER, payload)
+    }
+
+    async logout(): Promise<AxiosResponse<LoginResponse>> {
+        return await http.post(AUTH_API.LOGOUT)
+    }
 }
 
-export const logout = async () => {
-    return await http.post(AUTH_API.LOGOUT)
-}
-
-export const register = async (payload: any) => {
-    return await http.post(AUTH_API.REGISTER, payload)
-}
+export default new AuthService()

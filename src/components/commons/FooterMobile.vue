@@ -1,9 +1,7 @@
 <script lang="ts" setup></script>
 
 <template>
-    <div class="footer">
-        Footer Mobile
-    </div>
+    <div class="footer">Footer Mobile</div>
 </template>
 
 <style scoped>

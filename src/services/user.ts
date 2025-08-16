@@ -1,4 +1,4 @@
-import {http, httpFile} from '@/services/http'
+import { http, httpFile } from '@/services/http'
 import { USER_API } from '@/constants/api'
 
 export const getCurrentUser = async () => {
@@ -24,4 +24,3 @@ export const editUser = async (userId: any, payload: any) => {
 export const changePassword = async (userId: any, payload: any) => {
     await http.put(USER_API.CHANGE_PASSWORD(userId), payload)
 }
-

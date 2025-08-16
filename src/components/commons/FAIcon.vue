@@ -1,24 +1,24 @@
 <script lang="ts" setup>
-import {computed} from 'vue'
+import { computed } from 'vue'
 
 const props = withDefaults(
     defineProps<{
-      customStyle?: () => Record<string, string>
-      icon?: string
-      title?: string
-      color?: string
-      size?: string
-      clickable?: boolean
-      disabled?: boolean
+        customStyle?: () => Record<string, string>
+        icon?: string
+        title?: string
+        color?: string
+        size?: string
+        clickable?: boolean
+        disabled?: boolean
     }>(),
     {
-      customStyle: () => ({}),
-      icon: 'fas fa-question',
-      title: '',
-      color: 'black',
-      size: 'inherit',
-      clickable: true,
-      disabled: false,
+        customStyle: () => ({}),
+        icon: 'fas fa-question',
+        title: '',
+        color: 'black',
+        size: 'inherit',
+        clickable: true,
+        disabled: false,
     }
 )
 
@@ -38,8 +38,8 @@ const displayTitle = computed(() =>
 const fontSize = computed(() => props.size)
 
 function onClick() {
-  if (props.disabled) return
-  emit('click')
+    if (props.disabled) return
+    emit('click')
 }
 </script>
 
@@ -50,15 +50,15 @@ function onClick() {
         @click="onClick"
     >
         <el-tooltip v-if="displayTitle" :content="displayTitle" placement="top">
-            <i :class="icon" :style="{ fontSize, color: displayColor }"/>
+            <i :class="icon" :style="{ fontSize, color: displayColor }" />
         </el-tooltip>
-        <i v-else :class="icon" :style="{ fontSize, color: displayColor }"/>
+        <i v-else :class="icon" :style="{ fontSize, color: displayColor }" />
     </span>
 </template>
 
 <style scoped>
 .icon {
-  display: inline-flex;
-  align-items: center;
+    display: inline-flex;
+    align-items: center;
 }
 </style>

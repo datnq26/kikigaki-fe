@@ -1,8 +1,8 @@
 import axios from 'axios'
 
-import {REQUEST_HEADERS} from "@/constants/header"
-import {CREDENTIALS} from "@/constants/storage"
-import {getLocalStorage} from "@/utils/storage"
+import { REQUEST_HEADERS } from '@/constants/header'
+import { CREDENTIALS } from '@/constants/storage'
+import { getLocalStorage } from '@/utils/storage'
 
 const http = axios.create({
     withCredentials: true,
@@ -30,7 +30,6 @@ const httpFile = axios.create({
     },
 })
 
-
 http.interceptors.response.use(
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -54,7 +53,7 @@ httpFile.interceptors.response.use(
             // logout().then((r) => {console.log(r)})
         }
         return Promise.reject(error)
-    },
+    }
 )
 
-export {http, httpFile}
+export { http, httpFile }
