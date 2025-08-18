@@ -1,35 +1,61 @@
 import { defineStore } from 'pinia'
-import { getCurrentUser } from '@/services/user'
+import UserService from '@/services/user'
+import LessonService from '@/services/lesson'
+import AuthService from '@/services/auth'
+import {
+    getLocalStorage,
+    putLocalStorage,
+    removeLocalStorage,
+} from '@/utils/storage'
+import { CREDENTIALS } from '@/constants/storage'
 
 export const useAuthenticationStore = defineStore('authentication', {
     state: () => ({
-        userInfo: null,
-        role: String,
+        accessToken: getLocalStorage(CREDENTIALS.AUTHENTICATION_TOKEN) || null,
+        userInfo: null as any,
     }),
     getters: {
-        authenticated: (state) => state.userInfo != null,
+        authenticated: (state) => !!state.accessToken,
     },
     actions: {
+        async login(credentials: any) {
+            const res = await AuthService.login(credentials)
+            this.accessToken = res.data.access_token
+            putLocalStorage(
+                CREDENTIALS.AUTHENTICATION_TOKEN,
+                res.data.access_token
+            )
+            await this.loadFromServer()
+        },
         async loadFromServer() {
             try {
-                const resUser = await getCurrentUser()
+                const resUser = await LessonService.getAllLessons()
                 this.userInfo = resUser.data
-                this.role = resUser.data.role
             } catch (e: any) {
-                if (e.response && e.response.status === 401) {
-                    this.userInfo = null
-                }
+                this.userInfo = null
+            }
+        },
+        async refreshAccessToken() {
+            try {
+                const res = await AuthService.refreshToken()
+                this.accessToken = res.data.access
+                putLocalStorage(
+                    CREDENTIALS.AUTHENTICATION_TOKEN,
+                    res.data.access
+                )
+                return res.data.access
+            } catch (e) {
+                await this.logout()
+                throw e
             }
         },
         async logout() {
             try {
-                // await logout().then()
-                this.userInfo = null
-            } catch (e: any) {
-                if (e.response && e.response.status === 401) {
-                    this.userInfo = null
-                }
-            }
+                await AuthService.logout()
+            } catch (_) {}
+            this.userInfo = null
+            this.accessToken = null
+            removeLocalStorage(CREDENTIALS.AUTHENTICATION_TOKEN)
         },
     },
 })

@@ -1,12 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/commons/HomeView.vue'
-import { PATHS } from '@/router/paths'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import LoginView from '@/views/commons/LoginView.vue'
 import RegisterView from '@/views/commons/RegisterView.vue'
 import ProfileView from '@/views/commons/ProfileView.vue'
 import NotAuthenticationLayout from '@/layouts/NotAuthenticationLayout.vue'
 import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
+import { PATHS } from '@/router/paths'
 
 const router = createRouter({
     // @ts-ignore
@@ -20,11 +20,13 @@ const router = createRouter({
                     path: PATHS.HOME,
                     component: HomeView,
                     name: 'home',
+                    meta: { requiresAuth: true },
                 },
                 {
                     path: PATHS.PROFILE,
                     component: ProfileView,
                     name: 'profile',
+                    meta: { requiresAuth: true },
                 },
             ],
         },

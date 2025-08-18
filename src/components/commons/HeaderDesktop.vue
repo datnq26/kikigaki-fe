@@ -7,7 +7,6 @@ import AvatarDrawer from '@/components/drawers/AvatarDrawer.vue'
 import { useRouter } from 'vue-router'
 
 const authenticationStore = useAuthenticationStore()
-authenticationStore.loadFromServer()
 const infoRef = ref<InstanceType<typeof AvatarDrawer> | null>(null)
 
 const router = useRouter()

@@ -1,59 +1,55 @@
 import axios from 'axios'
 
 import { REQUEST_HEADERS } from '@/constants/header'
-import { CREDENTIALS } from '@/constants/storage'
-import { getLocalStorage } from '@/utils/storage'
+import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
+import { PATHS } from '@/router/paths'
 
 const http = axios.create({
     withCredentials: true,
     // @ts-ignore
     baseURL: import.meta.env.VITE_APP_ROOT_API,
-    transformRequest: [
-        function (data: any, headers: any) {
-            headers[REQUEST_HEADERS.TOKEN] = getLocalStorage(
-                CREDENTIALS.AUTHENTICATION_TOKEN
-            )
-            return JSON.stringify(data)
-        },
-    ],
-    headers: {
-        'Content-Type': 'application/json',
-    },
 })
 
-const httpFile = axios.create({
-    withCredentials: true,
-    // @ts-ignore
-    baseURL: import.meta.env.VITE_APP_ROOT_API,
-    headers: {
-        'Content-Type': 'multipart/form-data',
-    },
+http.interceptors.request.use(async (config) => {
+    const store = useAuthenticationStore()
+
+    if (store.accessToken) {
+        config.headers[REQUEST_HEADERS.TOKEN] = `Bearer ${store.accessToken}`
+    }
+
+    if (config.data instanceof FormData) {
+        delete config.headers['Content-Type']
+    } else {
+        config.headers['Content-Type'] = 'application/json'
+    }
+
+    return config
 })
 
 http.interceptors.response.use(
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    null,
-    (error: any) => {
-        if ([401, 403].includes(error.response.status)) {
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            // logout().then((r) => {console.log(r)})
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config
+        const store = useAuthenticationStore()
+
+        if (
+            error.response?.status === 401 &&
+            !originalRequest._retry &&
+            !originalRequest.url?.includes('/token/refresh')
+        ) {
+            originalRequest._retry = true
+            try {
+                const newAccessToken = await store.refreshAccessToken()
+                originalRequest.headers[REQUEST_HEADERS.TOKEN] =
+                    `Bearer ${newAccessToken}`
+                return http(originalRequest)
+            } catch (e) {
+                await store.logout()
+                window.location.href = PATHS.LOGIN
+            }
         }
         return Promise.reject(error)
     }
 )
 
-httpFile.interceptors.response.use(
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    null,
-    (error: any) => {
-        if ([401, 403].includes(error.response.status)) {
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            // logout().then((r) => {console.log(r)})
-        }
-        return Promise.reject(error)
-    }
-)
-
-export { http, httpFile }
+export { http }

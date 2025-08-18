@@ -91,7 +91,9 @@ import { PATHS } from '@/router/paths'
 import AuthService from '@/services/auth'
 import { LoginRequest } from '@/interfaces/auth'
 import { useRouter } from 'vue-router'
+import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
 
+const authStore = useAuthenticationStore()
 const loading = ref(false)
 const formRef = ref<typeof ElForm | null>(null)
 const router = useRouter()
@@ -124,15 +126,16 @@ const handleLogin = async () => {
         password: loginForm.password,
     }
     try {
-        const response = await AuthService.login(payload)
-        if (response.status === 200) {
-            ElNotification({
-                title: 'Success',
-                message: response.data.message,
-                type: 'success',
-            })
-            await router.push(PATHS.HOME)
-        }
+        const response = await authStore.login(payload)
+        await router.push(PATHS.HOME)
+        // if (response.status === 200) {
+        //     ElNotification({
+        //         title: 'Success',
+        //         message: response.data.message,
+        //         type: 'success',
+        //     })
+        //     await router.push(PATHS.HOME)
+        // }
     } catch (error) {
         ElNotification({
             title: 'Error',
