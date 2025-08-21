@@ -10,6 +10,7 @@ import {
     RegisterResponse,
     VerifyTokenRequest,
 } from '@/interfaces/auth'
+import { UserResponse } from '@/interfaces/user'
 
 class AuthService {
     async login(payload: LoginRequest): Promise<AxiosResponse<LoginResponse>> {
@@ -34,6 +35,10 @@ class AuthService {
         payload: VerifyTokenRequest
     ): Promise<AxiosResponse<any>> {
         return await http.post(AUTH_API.VERIFY_TOKEN, payload)
+    }
+
+    async getCurrentUser(): Promise<AxiosResponse<UserResponse>> {
+        return await http.get(AUTH_API.ME)
     }
 }
 

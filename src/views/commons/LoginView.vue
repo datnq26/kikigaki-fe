@@ -127,15 +127,14 @@ const handleLogin = async () => {
     }
     try {
         const response = await authStore.login(payload)
-        await router.push(PATHS.HOME)
-        // if (response.status === 200) {
-        //     ElNotification({
-        //         title: 'Success',
-        //         message: response.data.message,
-        //         type: 'success',
-        //     })
-        //     await router.push(PATHS.HOME)
-        // }
+        if (response.status === 200) {
+            ElNotification({
+                title: 'Success',
+                message: response.data.message,
+                type: 'success',
+            })
+            await router.push(PATHS.HOME)
+        }
     } catch (error) {
         ElNotification({
             title: 'Error',

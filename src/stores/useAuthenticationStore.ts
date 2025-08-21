@@ -1,6 +1,4 @@
 import { defineStore } from 'pinia'
-import UserService from '@/services/user'
-import LessonService from '@/services/lesson'
 import AuthService from '@/services/auth'
 import {
     getLocalStorage,
@@ -20,16 +18,14 @@ export const useAuthenticationStore = defineStore('authentication', {
     actions: {
         async login(credentials: any) {
             const res = await AuthService.login(credentials)
-            this.accessToken = res.data.access_token
-            putLocalStorage(
-                CREDENTIALS.AUTHENTICATION_TOKEN,
-                res.data.access_token
-            )
+            this.accessToken = res.data.access
+            putLocalStorage(CREDENTIALS.AUTHENTICATION_TOKEN, res.data.access)
             await this.loadFromServer()
+            return res
         },
         async loadFromServer() {
             try {
-                const resUser = await LessonService.getAllLessons()
+                const resUser = await AuthService.getCurrentUser()
                 this.userInfo = resUser.data
             } catch (e: any) {
                 this.userInfo = null

@@ -4,6 +4,7 @@ export const AUTH_API = {
     REGISTER: '/register',
     REFRESH_TOKEN: '/token/refresh',
     VERIFY_TOKEN: '/token/verify',
+    ME: '/me',
 }
 
 export const USER_API = {

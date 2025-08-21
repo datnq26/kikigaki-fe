@@ -20,7 +20,7 @@ const router = createRouter({
                     path: PATHS.HOME,
                     component: HomeView,
                     name: 'home',
-                    meta: { requiresAuth: true },
+                    meta: { requiresAuth: false },
                 },
                 {
                     path: PATHS.PROFILE,

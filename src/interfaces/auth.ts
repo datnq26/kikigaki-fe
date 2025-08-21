@@ -6,20 +6,21 @@ export interface LoginRequest {
 
 export interface LoginResponse {
     message: string
-    refresh_token: string
-    access_token: string
+    refresh: string
+    access: string
 }
 
 // Register API
 export interface RegisterRequest {
     email: string
     password: string
+    confirm_password: string
 }
 
 export interface RegisterResponse {
     message: string
-    refresh_token: string
-    access_token: string
+    refresh: string
+    access: string
 }
 
 // Logout API
