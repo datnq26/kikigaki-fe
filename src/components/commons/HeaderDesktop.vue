@@ -1,117 +1,156 @@
 <script setup lang="ts">
-import MenuHeader from '@/components/commons/MenuHeader.vue'
-import { PATHS } from '@/router/paths'
-import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
 import { ref } from 'vue'
-import AvatarDrawer from '@/components/drawers/AvatarDrawer.vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { Search } from '@element-plus/icons-vue'
+import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
+import { PATHS } from '@/router/paths'
 
-const authenticationStore = useAuthenticationStore()
-const infoRef = ref<InstanceType<typeof AvatarDrawer> | null>(null)
-
+const route = useRoute()
 const router = useRouter()
+const authenticationStore = useAuthenticationStore()
+const keyword = ref('')
 
-const handleOpenDrawer = () => {
-    infoRef.value?.openDrawer()
+const navLinks = [
+    { label: 'Home', path: PATHS.HOME },
+    { label: 'Profile', path: PATHS.PROFILE },
+    { label: 'Courses', path: PATHS.COURSES },
+    { label: 'Top Users', path: PATHS.TOP_USERS },
+]
+
+const onSearch = () => {
+    const q = keyword.value.trim()
+    if (!q) return
+    router.push({ path: PATHS.SEARCH, query: { q } })
+}
+
+const handleLogout = async () => {
+    await authenticationStore.logout()
+    await router.push(PATHS.LOGIN)
 }
 </script>
 
 <template>
-    <div class="header-content">
-        <template v-if="authenticationStore.authenticated">
-            <el-menu
-                class="menu"
-                mode="horizontal"
-                :ellipsis="false"
-                background-color="#fff"
-                menu-trigger="click"
-                :default-active="$route.path"
+    <div class="header-wrap">
+        <el-menu
+            class="menu"
+            mode="horizontal"
+            router
+            :ellipsis="false"
+            :default-active="route.path"
+            background-color="#fff"
+            text-color="#111827"
+            active-text-color="#22c55e"
+        >
+            <el-menu-item class="no-hover brand">
+                <img src="/logo.png" class="brand-logo" alt="logo" />
+                <span class="brand-name">KiKiGaki</span>
+            </el-menu-item>
+            <el-menu-item
+                v-for="l in navLinks"
+                :key="l.path"
+                :index="l.path"
+                class="nav-item"
             >
-                <el-menu-item
-                    class="desktop-logo-container no-hover"
-                    @click="router.push('/')"
-                >
-                    <img src="/logo.png" class="desktop-logo" alt="logo-app" />
-                </el-menu-item>
-
-                <div class="flex-grow"></div>
+                {{ l.label }}
+            </el-menu-item>
+            <div class="flex-grow" />
+            <el-menu-item class="no-hover">
+                <el-input
+                    v-model="keyword"
+                    class="responsive-input"
+                    placeholder="Search lessons..."
+                    :prefix-icon="Search"
+                    clearable
+                    size="large"
+                    @keyup.enter="onSearch"
+                />
+            </el-menu-item>
+            <template v-if="authenticationStore.authenticated">
                 <el-menu-item class="no-hover">
-                    <span class="name-user" @click="handleOpenDrawer">
-                        <el-avatar
-                            :src="authenticationStore?.userInfo?.avatar"
-                        />
-                        <span class="avatar">{{
-                            authenticationStore?.userInfo?.username
-                        }}</span>
-                    </span>
+                    <el-dropdown trigger="click">
+                        <span class="el-dropdown-link">
+                            <el-avatar
+                                class="user-avatar"
+                                :src="authenticationStore?.userInfo?.avatar"
+                            />
+                        </span>
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item>
+                                    Account settings
+                                </el-dropdown-item>
+                                <el-dropdown-item @click="handleLogout">
+                                    Log out
+                                </el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
                 </el-menu-item>
-            </el-menu>
-        </template>
-
-        <template v-else>
-            <el-menu
-                class="menu"
-                mode="horizontal"
-                :ellipsis="false"
-                background-color="#fff"
-                menu-trigger="click"
-                :default-active="$route.path"
-                router
-            >
-                <el-menu-item
-                    class="desktop-logo-container no-hover"
-                    :route="PATHS.HOME"
-                    index="1"
-                >
-                    <img src="/logo.png" class="desktop-logo" alt="logo-app" />
+            </template>
+            <template v-else>
+                <el-menu-item class="no-hover">
+                    <el-button plain @click="router.push(PATHS.REGISTER)"
+                        >Sign Up</el-button
+                    >
                 </el-menu-item>
-                <div class="flex-grow"></div>
-                <el-menu-item
-                    class="no-hover"
-                    :route="PATHS.REGISTER"
-                    :index="PATHS.REGISTER"
-                >
-                    <el-button plain>Sign Up</el-button>
+                <el-menu-item class="no-hover">
+                    <el-button type="primary" @click="router.push(PATHS.LOGIN)"
+                        >Sign In</el-button
+                    >
                 </el-menu-item>
-
-                <el-menu-item
-                    class="no-hover"
-                    :route="PATHS.LOGIN"
-                    :index="PATHS.LOGIN"
-                >
-                    <el-button type="primary">Sign In</el-button>
-                </el-menu-item>
-            </el-menu>
-        </template>
+            </template>
+        </el-menu>
     </div>
-
-    <AvatarDrawer ref="infoRef" />
 </template>
 
 <style scoped>
-.desktop-logo {
-    width: auto;
-    height: 65px;
-}
-
-.menu {
-    color: white;
+.header-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    background: #fff;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
 }
 
 .flex-grow {
-    flex-grow: 1;
+    flex: 1;
+}
+
+.menu.el-menu--horizontal {
+    border-bottom: 0;
+    padding: 0 16px;
+    align-items: center;
+}
+
+:deep(.el-menu--horizontal > .el-menu-item) {
+    height: 64px;
+    line-height: 64px;
+    padding: 0 14px;
+    font-weight: 500;
 }
 
 .menu .no-hover:hover {
     background-color: transparent !important;
 }
 
-.name-user {
+.brand {
     display: flex;
     align-items: center;
+    gap: 10px;
 }
 
-.avatar {
-    margin-left: 8px;
+.brand-logo {
+    width: 36px;
+    height: 36px;
+}
+
+.brand-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.user-avatar {
+    cursor: pointer;
 }
 </style>

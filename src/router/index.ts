@@ -7,6 +7,7 @@ import ProfileView from '@/views/commons/ProfileView.vue'
 import NotAuthenticationLayout from '@/layouts/NotAuthenticationLayout.vue'
 import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
 import { PATHS } from '@/router/paths'
+import ListCoursesView from '@/views/commons/ListCoursesView.vue'
 
 const router = createRouter({
     // @ts-ignore
@@ -20,12 +21,18 @@ const router = createRouter({
                     path: PATHS.HOME,
                     component: HomeView,
                     name: 'home',
-                    meta: { requiresAuth: false },
+                    meta: { requiresAuth: true },
                 },
                 {
                     path: PATHS.PROFILE,
                     component: ProfileView,
                     name: 'profile',
+                    meta: { requiresAuth: true },
+                },
+                {
+                    path: PATHS.COURSES,
+                    component: ListCoursesView,
+                    name: 'courses',
                     meta: { requiresAuth: true },
                 },
             ],
