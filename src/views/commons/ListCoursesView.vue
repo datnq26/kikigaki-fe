@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import CourseCard from '@/components/cards/CourseCard.vue'
+import CourseService from '@/services/course'
 import { ArrowRight, Right } from '@element-plus/icons-vue'
 
+const loading = ref(false)
 const courseSections = ref([
     {
         title: 'Beginner',
@@ -63,6 +65,25 @@ const courseSections = ref([
         ],
     },
 ])
+const courses = ref([])
+
+const fetchCourses = async () => {
+    loading.value = true
+    try {
+        const response = await CourseService.getAllCourses()
+        if (response.status === 200) {
+            console.log(response)
+        }
+    } catch (error) {
+        console.log(error)
+    } finally {
+        loading.value = false
+    }
+}
+
+onMounted(() => {
+    fetchCourses()
+})
 </script>
 
 <template>
@@ -77,10 +98,27 @@ const courseSections = ref([
             :key="section.title"
             class="course-section"
         >
-            <h1 class="section-title">{{ section.title }}</h1>
+            <el-skeleton v-if="loading" animated>
+                <template #template>
+                    <el-skeleton-item
+                        variant="h1"
+                        style="
+                            margin: 13px 0 12px 0;
+                            font-size: 30px;
+                            max-width: 150px;
+                            min-height: 36px;
+                        "
+                    />
+                </template>
+            </el-skeleton>
+            <h1 class="section-title" v-else>{{ section.title }}</h1>
             <el-row gutter="20">
                 <el-col :span="7" v-for="course in section.courses">
-                    <CourseCard :key="course.id" :course="course" />
+                    <CourseCard
+                        :key="course.id"
+                        :course="course"
+                        :loading="loading"
+                    />
                 </el-col>
                 <el-col
                     :span="3"
@@ -102,13 +140,6 @@ const courseSections = ref([
 </template>
 
 <style scoped>
-.page-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 24px;
-    background-color: #ffffff;
-}
-
 .course-section {
     margin-bottom: 48px;
 }
@@ -134,14 +165,24 @@ const courseSections = ref([
     .course-grid {
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     }
-    .page-container {
-        padding: 16px;
-    }
 }
 </style>
 
 <style>
+.page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: #ffffff;
+}
+
 .course-breadcrumb .el-breadcrumb__inner {
     color: #636ae8ff !important;
+}
+
+@media (max-width: 768px) {
+    .page-container {
+        padding: 16px;
+    }
 }
 </style>
