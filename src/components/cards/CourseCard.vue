@@ -5,6 +5,7 @@ import { CourseResponse } from '@/interfaces/course'
 
 const props = defineProps<{
     course: CourseResponse
+    loading: boolean
 }>()
 
 const router = useRouter()
@@ -21,26 +22,82 @@ const goToCourseDetail = () => {
         class="course-card"
         @click="goToCourseDetail"
     >
-        <el-image :src="course.image" class="card-image" :alt="course.name" />
-        <div class="card-content">
-            <h3 class="title">{{ course.name }}</h3>
-            <p class="description">{{ course.description }}</p>
-            <div class="meta">
-                <el-tag
-                    size="small"
-                    type="info"
-                    effect="plain"
-                    v-for="category in course.categories"
-                    class="tag-category"
-                    >{{ category }}</el-tag
-                >
+        <template v-if="loading">
+            <el-skeleton animated>
+                <template #template>
+                    <el-skeleton-item
+                        variant="image"
+                        style="width: 100%; height: 128px; border-radius: 4px"
+                    />
+                    <div style="padding: 12px 17px">
+                        <el-skeleton-item
+                            variant="h3"
+                            style="width: 80%; margin-bottom: 12px"
+                        />
+                        <el-skeleton-item
+                            variant="text"
+                            style="margin-bottom: 8px"
+                        />
+                        <el-skeleton-item
+                            variant="text"
+                            style="width: 60%; margin-bottom: 16px"
+                        />
+                        <div
+                            style="display: flex; gap: 8px; margin-bottom: 16px"
+                        >
+                            <el-skeleton-item
+                                variant="rect"
+                                style="
+                                    width: 60px;
+                                    height: 24px;
+                                    border-radius: 12px;
+                                "
+                            />
+                            <el-skeleton-item
+                                variant="rect"
+                                style="
+                                    width: 60px;
+                                    height: 24px;
+                                    border-radius: 12px;
+                                "
+                            />
+                        </div>
+                        <el-skeleton-item
+                            variant="button"
+                            style="width: 100px; height: 28px"
+                        />
+                    </div>
+                </template>
+            </el-skeleton>
+        </template>
+        <template v-else>
+            <el-image
+                :src="course.image"
+                class="card-image"
+                :alt="course.name"
+            />
+            <div class="card-content">
+                <h3 class="title">{{ course.name }}</h3>
+                <p class="description">{{ course.description }}</p>
+                <div class="meta">
+                    <el-tag
+                        size="small"
+                        type="info"
+                        effect="plain"
+                        v-for="category in course.categories"
+                        :key="category"
+                        class="tag-category"
+                    >
+                        {{ category }}
+                    </el-tag>
+                </div>
+                <div class="card-footer">
+                    <el-link type="success" :underline="false" class="learn-now"
+                        >Learn now</el-link
+                    >
+                </div>
             </div>
-            <div class="card-footer">
-                <el-link type="success" :underline="false" class="learn-now"
-                    >Learn now</el-link
-                >
-            </div>
-        </div>
+        </template>
     </el-card>
 </template>
 

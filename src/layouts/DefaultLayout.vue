@@ -1,10 +1,7 @@
 <script lang="ts" setup>
 import HeaderDesktop from '@/components/commons/HeaderDesktop.vue'
-import FooterDesktop from '@/components/commons/FooterDesktop.vue'
 import HeaderMobile from '@/components/commons/HeaderMobile.vue'
-import FooterMobile from '@/components/commons/FooterMobile.vue'
 import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
-import NavigationDesktop from '@/layouts/NavigationDesktop.vue'
 
 const authenticationStore = useAuthenticationStore()
 authenticationStore.loadFromServer()
@@ -42,7 +39,7 @@ authenticationStore.loadFromServer()
 
 #main {
     padding: 0;
-    overflow: hidden;
+    overflow-y: auto;
     height: calc(100vh - 60px);
 }
 </style>

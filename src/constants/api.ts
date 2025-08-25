@@ -22,3 +22,8 @@ export const LESSON_API = {
     ALL_LESSONS: '/lessons',
     LESSON_BY_ID: (lessonId: number) => `/lessons/${lessonId}`,
 }
+
+export const COURSE_API = {
+    ALL_COURSES: '/courses',
+    COURSE_BY_ID: (courseId: number) => `/courses/${courseId}`,
+}

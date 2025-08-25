@@ -8,6 +8,7 @@ import NotAuthenticationLayout from '@/layouts/NotAuthenticationLayout.vue'
 import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
 import { PATHS } from '@/router/paths'
 import ListCoursesView from '@/views/commons/ListCoursesView.vue'
+import CourseDetailView from '@/views/commons/CourseDetailView.vue'
 
 const router = createRouter({
     // @ts-ignore
@@ -33,6 +34,12 @@ const router = createRouter({
                     path: PATHS.COURSES,
                     component: ListCoursesView,
                     name: 'courses',
+                    meta: { requiresAuth: true },
+                },
+                {
+                    path: PATHS.COURSE_DETAIL,
+                    component: CourseDetailView,
+                    name: 'course-detail',
                     meta: { requiresAuth: true },
                 },
             ],
