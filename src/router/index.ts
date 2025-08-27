@@ -9,6 +9,7 @@ import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
 import { PATHS } from '@/router/paths'
 import ListCoursesView from '@/views/commons/ListCoursesView.vue'
 import CourseDetailView from '@/views/commons/CourseDetailView.vue'
+import AccountSettingView from '@/views/commons/AccountSettingView.vue'
 
 const router = createRouter({
     // @ts-ignore
@@ -40,6 +41,12 @@ const router = createRouter({
                     path: PATHS.COURSE_DETAIL,
                     component: CourseDetailView,
                     name: 'course-detail',
+                    meta: { requiresAuth: true },
+                },
+                {
+                    path: PATHS.ACCOUNT_SETTING,
+                    component: AccountSettingView,
+                    name: 'account-setting',
                     meta: { requiresAuth: true },
                 },
             ],
