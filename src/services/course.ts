@@ -1,7 +1,7 @@
 import { http } from '@/services/http'
 import { COURSE_API } from '@/constants/api'
 import { AxiosResponse } from 'axios'
-import { CourseResponse } from '@/interfaces/course'
+import { CourseResponse, TopByCategoriesResponse } from '@/interfaces/course'
 
 class CourseService {
     async getAllCourses(): Promise<AxiosResponse<CourseResponse[]>> {
@@ -12,6 +12,10 @@ class CourseService {
         courseId: number
     ): Promise<AxiosResponse<CourseResponse>> {
         return http.get(COURSE_API.COURSE_BY_ID(courseId))
+    }
+
+    async topByCategories(): Promise<AxiosResponse<TopByCategoriesResponse[]>> {
+        return http.get(COURSE_API.TOP_BY_CATEGORIES)
     }
 }
 

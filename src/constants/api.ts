@@ -26,4 +26,5 @@ export const LESSON_API = {
 export const COURSE_API = {
     ALL_COURSES: '/courses',
     COURSE_BY_ID: (courseId: number) => `/courses/${courseId}`,
+    TOP_BY_CATEGORIES: '/courses/top-by-categories',
 }

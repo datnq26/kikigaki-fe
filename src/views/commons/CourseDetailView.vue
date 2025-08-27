@@ -7,34 +7,27 @@ import {
     Share,
     VideoPlay,
 } from '@element-plus/icons-vue'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import FAIcon from '@/components/commons/FAIcon.vue'
 import ReviewCard from '@/components/cards/ReviewCard.vue'
+import { CourseResponse } from '@/interfaces/course'
+import CourseService from '@/services/course'
 
 const route = useRoute()
 const courseId = Number(route.params.courseId)
-
 const isWishlisted = ref(false)
 const toggleWishlist = () => {
     isWishlisted.value = !isWishlisted.value
 }
-
 const courseOverview = ref([
     { title: 'Duration', value: '12 hours', icon: 'fa-solid fa-book-open' },
     { title: 'Language', value: 'Japanese', icon: 'fa-regular fa-comment' },
     { title: 'Certificate', value: 'Yes', icon: 'fa-solid fa-trophy' },
     { title: 'Access', value: 'Lifetime', icon: 'fa-regular fa-calendar' },
-    { title: 'Level', value: 'N5', icon: 'fa-solid fa-bolt' },
 ])
-
-const courseTitle = ref('Kanji for Beginners')
-const heroImage = ref(
-    'https://images.unsplash.com/photo-1529101091764-c3526daf38fe?q=80&w=1200&auto=format&fit=crop'
-)
 const rating = ref(4.7)
 const reviewsCount = ref(1250)
 const duration = ref('12 hours')
-
 const learningOutcomes = ref<string[]>([
     'Deeply understand the comprehensive UI/UX design process.',
     'Analyze and research users to identify needs and behaviors.',
@@ -43,7 +36,6 @@ const learningOutcomes = ref<string[]>([
     'Design wireframes, mockups, and highly interactive prototypes.',
     'Build an impressive portfolio to attract employers.',
 ])
-
 const modules = ref<any[]>([
     {
         id: 'm1',
@@ -84,6 +76,15 @@ const modules = ref<any[]>([
         ],
     },
 ])
+const course = ref<CourseResponse>({
+    categories: [],
+    description: '',
+    id: 0,
+    image: '',
+    name: '',
+    level: '',
+})
+const loading = ref(false)
 const activeModules = ref<string[]>(['m1'])
 
 const reviews = ref<any[]>([
@@ -127,9 +128,25 @@ const reviews = ref<any[]>([
 
 const formatNumber = (n: number) => n.toLocaleString('vi-VN')
 
-const categories = ref(['Kanji', 'Vocabulary'])
-
 const handleEnroll = () => {}
+
+const fetchCourseDetail = async () => {
+    loading.value = true
+    try {
+        const response = await CourseService.getCourseById(courseId)
+        if (response.status === 200) {
+            course.value = response.data
+        }
+    } catch (error) {
+        console.error('Error fetching course detail:', error)
+    } finally {
+        loading.value = false
+    }
+}
+
+onMounted(() => {
+    fetchCourseDetail()
+})
 </script>
 
 <template>
@@ -142,13 +159,13 @@ const handleEnroll = () => {}
                     :body-style="{
                         padding: '0',
                         minHeight: '450px',
-                        backgroundImage: `url(${heroImage})`,
+                        backgroundImage: `url(${course.image})`,
                         display: 'flex',
                         alignItems: 'end',
                     }"
                 >
                     <div class="hero-content">
-                        <h1 class="page-title">{{ courseTitle }}</h1>
+                        <h1 class="page-title">{{ course.name }}</h1>
                         <div class="meta-row">
                             <div class="meta-left">
                                 <div class="rating-wrap">
@@ -199,8 +216,7 @@ const handleEnroll = () => {}
                 <section class="section">
                     <h2 class="section-title">Course Overview</h2>
                     <p class="section-desc">
-                        An introduction to the most common fundamental Kanji
-                        characters.
+                        {{ course.description }}
                     </p>
 
                     <h3 class="sub-title">What you will learn:</h3>
@@ -298,7 +314,7 @@ const handleEnroll = () => {}
                     shadow="never"
                     :body-style="{ padding: '25px 24px' }"
                 >
-                    <h3 class="text-price">{{ 900000 }} VND</h3>
+                    <h3 class="text-price">FREE</h3>
 
                     <el-button
                         type="success"
@@ -331,6 +347,15 @@ const handleEnroll = () => {}
                             <span class="co-title">{{ co.title }}:</span>
                             <span class="co-value">{{ co.value }}</span>
                         </div>
+                        <div class="overview-row">
+                            <FAIcon
+                                icon="fa-solid fa-bolt"
+                                color="#636AE8FF"
+                                size="16px"
+                            />
+                            <span class="co-title">Level:</span>
+                            <span class="co-value">{{ course.level }}</span>
+                        </div>
                     </div>
 
                     <div class="categories">
@@ -340,7 +365,7 @@ const handleEnroll = () => {}
                                 size="small"
                                 type="info"
                                 effect="plain"
-                                v-for="cat in categories"
+                                v-for="cat in course.categories"
                                 :key="cat"
                                 class="category-tag"
                             >
@@ -367,7 +392,6 @@ const handleEnroll = () => {}
 }
 
 .page-title {
-    font-family: Archivo, sans-serif;
     font-weight: 800;
     font-size: 36px;
     line-height: 48px;
@@ -423,7 +447,6 @@ const handleEnroll = () => {}
 }
 
 .section-title {
-    font-family: Archivo, sans-serif;
     font-size: 22px;
     line-height: 28px;
     font-weight: 700;
@@ -526,7 +549,6 @@ const handleEnroll = () => {}
 }
 
 .score {
-    font-family: Archivo, sans-serif;
     font-size: 40px;
     font-weight: 800;
     color: #111827;
@@ -557,7 +579,6 @@ const handleEnroll = () => {}
 }
 
 .text-price {
-    font-family: Archivo, sans-serif;
     font-size: 30px;
     line-height: 36px;
     font-weight: 700;

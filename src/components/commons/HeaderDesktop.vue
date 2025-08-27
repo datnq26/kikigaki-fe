@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { Search } from '@element-plus/icons-vue'
 import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
 import { PATHS } from '@/router/paths'
+import { BASE_IMAGE_URL } from '@/constants/image'
 
 const route = useRoute()
 const router = useRouter()
@@ -27,6 +28,8 @@ const handleLogout = async () => {
     await authenticationStore.logout()
     await router.push(PATHS.LOGIN)
 }
+
+console.log(BASE_IMAGE_URL + authenticationStore?.userInfo?.avatar)
 </script>
 
 <template>
@@ -71,7 +74,10 @@ const handleLogout = async () => {
                         <span class="el-dropdown-link">
                             <el-avatar
                                 class="user-avatar"
-                                :src="authenticationStore?.userInfo?.avatar"
+                                :src="
+                                    BASE_IMAGE_URL +
+                                    authenticationStore?.userInfo?.avatar
+                                "
                             />
                         </span>
                         <template #dropdown>

@@ -267,7 +267,6 @@ const submitForm = (formEl: typeof ElForm | null) => {
     font-weight: 700;
     margin: 0 0 48px 0;
     color: #242524ff;
-    font-family: Archivo, sans-serif;
 }
 
 .subtitle {
@@ -278,7 +277,6 @@ const submitForm = (formEl: typeof ElForm | null) => {
     color: #8c8d8bff;
     max-width: 300px;
     text-align: center;
-    font-family: Inter, sans-serif;
 }
 
 .register-form {

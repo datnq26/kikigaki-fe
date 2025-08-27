@@ -4,4 +4,10 @@ export interface CourseResponse {
     description: string
     image: string
     categories: string[]
+    level: string
+}
+
+export interface TopByCategoriesResponse {
+    category: string
+    courses: CourseResponse[]
 }

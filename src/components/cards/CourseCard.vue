@@ -2,6 +2,7 @@
 import { defineProps } from 'vue'
 import { useRouter } from 'vue-router'
 import { CourseResponse } from '@/interfaces/course'
+import { BASE_IMAGE_URL } from '@/constants/image'
 
 const props = defineProps<{
     course: CourseResponse
@@ -72,7 +73,7 @@ const goToCourseDetail = () => {
         </template>
         <template v-else>
             <el-image
-                :src="course.image"
+                :src="BASE_IMAGE_URL + course.image"
                 class="card-image"
                 :alt="course.name"
             />
@@ -134,7 +135,6 @@ const goToCourseDetail = () => {
     margin: 0 0 17px 0;
     color: #242524ff;
     overflow: hidden;
-    font-family: Inter, sans-serif;
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -169,7 +169,6 @@ const goToCourseDetail = () => {
     height: 28px;
     padding: 4px 8px;
     border-radius: 9999px;
-    font-family: Inter, sans-serif;
     font-size: 10px;
     line-height: 16px;
     font-weight: 600;

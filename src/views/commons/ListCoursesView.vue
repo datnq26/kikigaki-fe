@@ -3,79 +3,25 @@ import { onMounted, ref } from 'vue'
 import CourseCard from '@/components/cards/CourseCard.vue'
 import CourseService from '@/services/course'
 import { ArrowRight, Right } from '@element-plus/icons-vue'
+import { TopByCategoriesResponse } from '@/interfaces/course'
+import { ElNotification } from 'element-plus'
 
 const loading = ref(false)
-const courseSections = ref([
-    {
-        title: 'Beginner',
-        courses: [
-            {
-                id: 1,
-                name: 'Kanji for Beginners',
-                description:
-                    'An introduction to the most common fundamental Kanji characters.',
-                image: 'https://images.unsplash.com/photo-1543183538-42b753a9481f?w=600',
-                categories: ['Kanji', 'Vocabulary'],
-            },
-            {
-                id: 2,
-                name: 'Adjectives & Adverbs',
-                description:
-                    'Learn how to describe things and actions with common Japanese adjectives and adverbs.',
-                image: 'https://images.unsplash.com/photo-1516943991208-011831844199?w=600',
-                categories: ['Grammar'],
-            },
-            {
-                id: 3,
-                name: 'Japanese Counters',
-                description:
-                    'Master the art of counting different objects in Japanese with the correct counters.',
-                image: 'https://images.unsplash.com/photo-1517402092188-16428a2a07d8?w=600',
-                categories: ['Vocabulary'],
-            },
-        ],
-    },
-    {
-        title: 'Anime 2025',
-        courses: [
-            {
-                id: 4,
-                name: 'Anime & Manga Phrases',
-                description:
-                    'Understand common phrases and slang you hear in your favorite anime and manga.',
-                image: 'https://images.unsplash.com/photo-1613376023733-0a73375d9306?w=600',
-                categories: ['Culture'],
-            },
-            {
-                id: 5,
-                name: 'Onomatopoeia in Action',
-                description:
-                    'Explore the expressive world of Japanese onomatopoeia, from "doki doki" to "zaa zaa".',
-                image: 'https://images.unsplash.com/photo-1618336753325-a7653b1b59ab?w=600',
-                categories: ['Vocabulary'],
-            },
-            {
-                id: 6,
-                name: 'Analyzing Your Favorite Scenes',
-                description:
-                    'A deep dive into the language and grammar used in iconic anime scenes.',
-                image: 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=600',
-                categories: ['Listening'],
-            },
-        ],
-    },
-])
-const courses = ref([])
+const courses = ref<TopByCategoriesResponse[]>()
 
 const fetchCourses = async () => {
     loading.value = true
     try {
-        const response = await CourseService.getAllCourses()
+        const response = await CourseService.topByCategories()
         if (response.status === 200) {
-            console.log(response)
+            courses.value = response.data
         }
     } catch (error) {
-        console.log(error)
+        ElNotification({
+            title: 'Error',
+            message: 'Loading courses failed. Please try again.',
+            type: 'error',
+        })
     } finally {
         loading.value = false
     }
@@ -94,8 +40,8 @@ onMounted(() => {
         </el-breadcrumb>
 
         <div
-            v-for="section in courseSections"
-            :key="section.title"
+            v-for="course in courses"
+            :key="course.category"
             class="course-section"
         >
             <el-skeleton v-if="loading" animated>
@@ -111,23 +57,23 @@ onMounted(() => {
                     />
                 </template>
             </el-skeleton>
-            <h1 class="section-title" v-else>{{ section.title }}</h1>
+            <h1 class="section-title" v-else>{{ course.category }}</h1>
             <el-row gutter="20">
-                <el-col :span="7" v-for="course in section.courses">
+                <el-col :span="7" v-for="topCourse in course.courses">
                     <CourseCard
-                        :key="course.id"
-                        :course="course"
+                        :key="topCourse.id"
+                        :course="topCourse"
                         :loading="loading"
                     />
                 </el-col>
                 <el-col
                     :span="3"
                     class="d-flex justify-center align-center"
-                    v-if="section.courses.length >= 3"
+                    v-if="course.courses.length >= 3"
                 >
                     <el-button
                         class="more-button"
-                        v-if="section.courses.length >= 3"
+                        v-if="course.courses.length >= 3"
                         :icon="Right"
                         type="success"
                         plain
@@ -145,7 +91,6 @@ onMounted(() => {
 }
 
 .section-title {
-    font-family: Archivo, sans-serif;
     font-size: 30px;
     line-height: 36px;
     font-weight: 700;
