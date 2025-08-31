@@ -83,7 +83,7 @@ console.log(BASE_IMAGE_URL + authenticationStore?.userInfo?.avatar)
                         <template #dropdown>
                             <el-dropdown-menu>
                                 <el-dropdown-item>
-                                    Account settings
+                                    <el-link :href="PATHS.ACCOUNT_SETTINGS">Account settings</el-link>
                                 </el-dropdown-item>
                                 <el-dropdown-item @click="handleLogout">
                                     Log out

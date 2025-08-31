@@ -1,7 +1,90 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import CourseCard from '@/components/cards/CourseCard.vue'
-import { ArrowRight, Right } from '@element-plus/icons-vue'
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { UpdateAccountRequest } from '@/interfaces/user'
+import UserService from '@/services/user'
+
+const userInfoRequest = ref<UpdateAccountRequest>({
+    username: '',
+    first_name: '',
+    last_name: '',
+})
+
+const userService = UserService
+const isUpdateSuccess = ref(false)
+const isLoading = ref(false)
+const isFormValid = ref(true)
+const originalData = ref({
+    username: '',
+    first_name: '',
+    last_name: '',
+    email: '',
+})
+
+const loadUserData = async () => {
+    try {
+        const response = await userService.getCurrentUser()
+        if (response.status === 200 && response.data) {
+            const userData = {
+                username: response.data.username || '',
+                first_name: response.data.first_name || '',
+                last_name: response.data.last_name || '',
+            }
+            userInfoRequest.value = { 
+                ...userData, 
+            }
+            originalData.value = { 
+                ...userData, 
+                email: response.data.email || '' 
+            }
+        }
+    } catch (error) {
+        console.error('Error loading user data:', error)
+        ElMessage.error('Failed to load user data')
+    }
+}
+
+const validateForm = () => {
+    isFormValid.value = true
+    
+    if (!userInfoRequest.value.username?.trim()) {
+        ElMessage.warning('Username is required')
+        isFormValid.value = false
+        return false
+    }
+    
+    return true
+}
+
+const handleUpdateAccountInfo = async () => {
+    if (!validateForm()) {
+        return
+    }
+    
+    isLoading.value = true
+    isUpdateSuccess.value = false
+    
+    try {
+        const response = await userService.updateAccount(userInfoRequest.value)
+        if (response.status === 200) {
+            isUpdateSuccess.value = true
+            ElMessage.success('Account updated successfully')
+        } else {
+            isUpdateSuccess.value = false
+            ElMessage.error('Failed to update account')
+        }
+    } catch (error) {
+        console.error('Error updating account info:', error)
+        isUpdateSuccess.value = false
+        ElMessage.error('An error occurred while updating account')
+    } finally {
+        isLoading.value = false
+    }
+}
+
+onMounted(() => {
+    loadUserData()
+})
 </script>
 
 <template>
@@ -91,15 +174,19 @@ import { ArrowRight, Right } from '@element-plus/icons-vue'
                                 <div class="input">
                                     <div><el-text>First Name</el-text></div>
                                     <el-input
+                                        v-model="userInfoRequest.first_name"
                                         style="width: 100%"
                                         placeholder="First Name"
+                                        :disabled="isLoading"
+                                        :class="{ 'is-error': !isFormValid && !userInfoRequest.first_name.trim() }"
                                     />
-                                </div>
-                                <div class="input">
                                     <div><el-text>Last Name</el-text></div>
                                     <el-input
+                                        v-model="userInfoRequest.last_name"
                                         style="width: 100%"
                                         placeholder="Last Name"
+                                        :disabled="isLoading"
+                                        :class="{ 'is-error': !isFormValid && !userInfoRequest.last_name.trim() }"
                                     />
                                 </div>
                             </div>
@@ -107,8 +194,11 @@ import { ArrowRight, Right } from '@element-plus/icons-vue'
                                 <div class="input">
                                     <div><el-text>Username</el-text></div>
                                     <el-input
+                                        v-model="userInfoRequest.username"
                                         style="width: 100%"
                                         placeholder="Username"
+                                        :disabled="isLoading"
+                                        :class="{ 'is-error': !isFormValid && !userInfoRequest.username.trim() }"
                                     />
                                 </div>
                                 <div class="input">
@@ -116,15 +206,18 @@ import { ArrowRight, Right } from '@element-plus/icons-vue'
                                     <el-input
                                         style="width: 100%"
                                         placeholder="Email Address"
+                                        :value="originalData.email"
                                         disabled
                                     />
                                 </div>
                             </div>
                         </div>
-                        <div>
+                        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 2%">
                             <el-button
                                 type="primary"
-                                style="width: 12%; float: right; margin-top: 2%"
+                                :loading="isLoading"
+                                :disabled="isLoading"
+                                @click="handleUpdateAccountInfo"
                                 >Save Changes</el-button
                             >
                         </div>
@@ -290,5 +383,14 @@ import { ArrowRight, Right } from '@element-plus/icons-vue'
 <style>
 .course-breadcrumb .el-breadcrumb__inner {
     color: #636ae8ff !important;
+}
+
+.is-error {
+    border-color: #f56c6c !important;
+}
+
+.is-error:focus {
+    border-color: #f56c6c !important;
+    box-shadow: 0 0 0 2px rgba(245, 108, 108, 0.2) !important;
 }
 </style>
