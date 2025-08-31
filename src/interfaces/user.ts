@@ -6,3 +6,9 @@ export interface UserResponse {
     is_active: boolean
     is_staff: boolean
 }
+
+export interface UpdateAccountRequest {
+    username: string
+    first_name: string
+    last_name: string
+}

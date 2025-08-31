@@ -16,6 +16,7 @@ export const USER_API = {
     CREATE_USER: '/user',
     USER_BY_ID: (userId: any) => `/user/${userId}`,
     CHANGE_PASSWORD: (userId: any) => `/user/change-password/${userId}`,
+    UPDATE_ACCOUNT: (username: string | null, first_name: string | null, last_name: string | null) => '/user/update-account',
 }
 
 export const LESSON_API = {
