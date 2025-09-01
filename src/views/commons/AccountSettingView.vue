@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UpdateAccountRequest } from '@/interfaces/user'
 import UserService from '@/services/user'
+import { capitalize } from '@/utils/format'
 
 const userInfoRequest = ref<UpdateAccountRequest>({
     username: '',
@@ -10,6 +11,7 @@ const userInfoRequest = ref<UpdateAccountRequest>({
     last_name: '',
 })
 
+const urlAvatar = ref('')
 const userService = UserService
 const isUpdateSuccess = ref(false)
 const isLoading = ref(false)
@@ -19,6 +21,8 @@ const originalData = ref({
     first_name: '',
     last_name: '',
     email: '',
+    accessLevel: '',
+    expireDate: '',
 })
 
 const loadUserData = async () => {
@@ -35,12 +39,34 @@ const loadUserData = async () => {
             }
             originalData.value = { 
                 ...userData, 
-                email: response.data.email || '' 
+                email: response.data.email || '',
+                accessLevel: capitalize(response.data.access_level),
+                expireDate: 'Permanently',
             }
+            urlAvatar.value = response.data.avatar || ''
         }
     } catch (error) {
         console.error('Error loading user data:', error)
         ElMessage.error('Failed to load user data')
+    }
+}
+
+
+
+const updateAvatar = async (file?: File) => {
+    try {
+        const response = await userService.updateAvatar(file)
+        if (response.status === 200) {
+            urlAvatar.value = response.data.avatar
+            console.log(response)
+            ElMessage.success('Avatar updated successfully')
+        }
+        else {
+            ElMessage.error('Failed to update avatar')
+        }
+    } catch (error) {
+        console.error('Error updating avatar:', error)
+        ElMessage.error('Failed to update avatar')
     }
 }
 
@@ -123,20 +149,30 @@ onMounted(() => {
                                 <el-image
                                     class="avatar"
                                     style="width: 100px; height: 100px"
-                                    src="http://localhost:8000/media/images/avatars/default.jpg"
                                     fit="cover"
+                                    :src="`http://localhost:8000/${urlAvatar}`"
                                 />
                             </div>
                             <div class="handle-avatar-buttons">
-                                <el-button type="default" style="">
-                                    <el-text type="primary"
-                                        >Upload new picture</el-text
-                                    >
-                                </el-button>
+                                <el-upload 
+                                    :auto-upload="false"
+                                    :show-file-list="false"
+                                    accept="image/*"
+                                    @change="(file: any) => updateAvatar(file.raw)"
+                                >
+                                    <el-button type="default" style="">
+                                        <el-text type="primary"
+                                            >Upload new picture</el-text
+                                        >
+                                    </el-button>
+                                </el-upload>
                                 <el-button
                                     type="default"
                                     text
                                     style="margin: 0%"
+                                    @click="() => {
+                                        updateAvatar()
+                                    }"
                                 >
                                     <el-text type="danger"
                                         >Remove picture</el-text
@@ -260,16 +296,16 @@ onMounted(() => {
                                 <el-text class="mx-1" size="small"
                                     >Current Plan:
                                 </el-text>
-                                <el-text class="mx-1" size="small" tag="b"
-                                    >Free</el-text
-                                >
+                                <el-text class="mx-1" size="small" tag="b">
+                                    {{ originalData.accessLevel }}    
+                                </el-text>
                             </div>
                             <div>
                                 <el-text class="mx-1" size="small"
                                     >Renewal Date:
                                 </el-text>
                                 <el-text class="mx-1" size="small" tag="b"
-                                    >October 26, 2025</el-text
+                                    >{{ originalData.expireDate }}</el-text
                                 >
                             </div>
                         </div>
