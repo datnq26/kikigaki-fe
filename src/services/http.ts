@@ -3,6 +3,8 @@ import axios from 'axios'
 import { REQUEST_HEADERS } from '@/constants/header'
 import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
 import { PATHS } from '@/router/paths'
+import { removeLocalStorage } from '@/utils/storage'
+import { CREDENTIALS } from '@/constants/storage'
 
 const http = axios.create({
     withCredentials: true,
@@ -39,6 +41,7 @@ http.interceptors.response.use(
         ) {
             originalRequest._retry = true
             try {
+                removeLocalStorage(CREDENTIALS.AUTHENTICATION_TOKEN)
                 const newAccessToken = await store.refreshAccessToken()
                 originalRequest.headers[REQUEST_HEADERS.TOKEN] =
                     `Bearer ${newAccessToken}`

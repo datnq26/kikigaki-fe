@@ -21,7 +21,6 @@ const goToCourseDetail = () => {
         shadow="hover"
         :body-style="{ padding: '0px' }"
         class="course-card"
-        @click="goToCourseDetail"
     >
         <template v-if="loading">
             <el-skeleton animated>
@@ -73,12 +72,13 @@ const goToCourseDetail = () => {
         </template>
         <template v-else>
             <el-image
-                :src="BASE_IMAGE_URL + course.image"
+                :src="course.image.startsWith(BASE_IMAGE_URL) ? course.image : BASE_IMAGE_URL + course.image"
                 class="card-image"
                 :alt="course.name"
+                @click="goToCourseDetail"
             />
             <div class="card-content">
-                <h3 class="title">{{ course.name }}</h3>
+                <h3 class="title" @click="goToCourseDetail">{{ course.name }}</h3>
                 <p class="description">{{ course.description }}</p>
                 <div class="meta">
                     <el-tag
@@ -88,12 +88,13 @@ const goToCourseDetail = () => {
                         v-for="category in course.categories"
                         :key="category"
                         class="tag-category"
+                        @click="router.push(`/courses?category=${category}`)"
                     >
                         {{ category }}
                     </el-tag>
                 </div>
                 <div class="card-footer">
-                    <el-link type="success" :underline="false" class="learn-now"
+                    <el-link type="success" @click="goToCourseDetail" :underline="false" class="learn-now"
                         >Learn now</el-link
                     >
                 </div>

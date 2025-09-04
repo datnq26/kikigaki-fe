@@ -28,8 +28,6 @@ const handleLogout = async () => {
     await authenticationStore.logout()
     await router.push(PATHS.LOGIN)
 }
-
-console.log(BASE_IMAGE_URL + authenticationStore?.userInfo?.avatar)
 </script>
 
 <template>
@@ -82,10 +80,10 @@ console.log(BASE_IMAGE_URL + authenticationStore?.userInfo?.avatar)
                         </span>
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item>
-                                    <el-link :href="PATHS.ACCOUNT_SETTINGS"
-                                        >Account settings</el-link
-                                    >
+                                <el-dropdown-item
+                                    @click="router.push(PATHS.ACCOUNT_SETTINGS)"
+                                >
+                                    Account settings
                                 </el-dropdown-item>
                                 <el-dropdown-item @click="handleLogout">
                                     Log out

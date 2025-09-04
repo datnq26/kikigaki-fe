@@ -21,12 +21,29 @@ export const USER_API = {
 }
 
 export const LESSON_API = {
-    ALL_LESSONS: '/lessons',
+    ALL_LESSONS: (courseId: number | null = null) => {
+        if (courseId) {
+            return `/lessons?course=${courseId}`
+        }
+        return `/lessons`
+    },
     LESSON_BY_ID: (lessonId: number) => `/lessons/${lessonId}`,
 }
 
 export const COURSE_API = {
-    ALL_COURSES: '/courses',
+    ALL_COURSES: (params: any) => {
+        const query = Object.keys(params)
+            .filter(
+                (key) =>
+                    params[key] !== undefined &&
+                    params[key] !== null &&
+                    params[key] !== 0 &&
+                    params[key] !== ''
+            )
+            .map((key) => `${key}=${params[key]}`)
+            .join('&')
+        return `/courses?${query}`
+    },
     COURSE_BY_ID: (courseId: number) => `/courses/${courseId}`,
     TOP_BY_CATEGORIES: '/courses/top-by-categories',
 }

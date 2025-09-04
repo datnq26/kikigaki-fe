@@ -167,6 +167,13 @@ onMounted(() => {
                                     class="avatar"
                                     style="width: 100px; height: 100px"
                                     fit="cover"
+                                    :zoom-rate="1.2"
+                                    :max-scale="7"
+                                    :min-scale="0.2"
+                                    show-progress
+                                    :preview-src-list="[
+                                        `${BASE_IMAGE_URL}${urlAvatar}`,
+                                    ]"
                                     :src="`${BASE_IMAGE_URL}${urlAvatar}`"
                                 />
                             </div>
@@ -248,6 +255,7 @@ onMounted(() => {
                                             v-model="userInfoRequest.first_name"
                                             style="width: 100%"
                                             placeholder="First Name"
+                                            spellcheck="false"
                                             :disabled="isLoading"
                                             :class="{
                                                 'is-error':
@@ -266,6 +274,7 @@ onMounted(() => {
                                             v-model="userInfoRequest.last_name"
                                             style="width: 100%"
                                             placeholder="Last Name"
+                                            spellcheck="false"
                                             :disabled="isLoading"
                                             :class="{
                                                 'is-error':
@@ -288,6 +297,7 @@ onMounted(() => {
                                             v-model="userInfoRequest.username"
                                             style="width: 100%"
                                             placeholder="Username"
+                                            spellcheck="false"
                                             :disabled="isLoading"
                                             :class="{
                                                 'is-error':

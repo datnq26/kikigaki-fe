@@ -12,6 +12,8 @@ import FAIcon from '@/components/commons/FAIcon.vue'
 import ReviewCard from '@/components/cards/ReviewCard.vue'
 import { CourseResponse } from '@/interfaces/course'
 import CourseService from '@/services/course'
+import LessonService from '@/services/lesson'
+import { LessonResponse } from '@/interfaces/lesson'
 
 const route = useRoute()
 const courseId = Number(route.params.courseId)
@@ -36,46 +38,6 @@ const learningOutcomes = ref<string[]>([
     'Design wireframes, mockups, and highly interactive prototypes.',
     'Build an impressive portfolio to attract employers.',
 ])
-const modules = ref<any[]>([
-    {
-        id: 'm1',
-        title: 'Module 1: Introduction to UI/UX and Core Principles',
-        lessons: [
-            {
-                id: 'l1',
-                title: 'What is UI/UX Design?',
-                duration: '08:12',
-                free: true,
-            },
-            {
-                id: 'l2',
-                title: 'The Double Diamond Process',
-                duration: '12:30',
-            },
-            {
-                id: 'l3',
-                title: 'Principles: Usability & Accessibility',
-                duration: '10:05',
-            },
-        ],
-    },
-    {
-        id: 'm2',
-        title: 'Module 2: Visual Interface Design (UI Design)',
-        lessons: [
-            {
-                id: 'l4',
-                title: 'Color, Typography, and Spacing',
-                duration: '14:20',
-            },
-            {
-                id: 'l5',
-                title: 'Design System and Components',
-                duration: '11:47',
-            },
-        ],
-    },
-])
 const course = ref<CourseResponse>({
     categories: [],
     description: '',
@@ -84,6 +46,7 @@ const course = ref<CourseResponse>({
     name: '',
     level: '',
 })
+const lessons = ref<LessonResponse[]>([])
 const loading = ref(false)
 const activeModules = ref<string[]>(['m1'])
 
@@ -133,9 +96,15 @@ const handleEnroll = () => {}
 const fetchCourseDetail = async () => {
     loading.value = true
     try {
-        const response = await CourseService.getCourseById(courseId)
-        if (response.status === 200) {
-            course.value = response.data
+        const [courseDetailResponse, lessonsResponse] = await Promise.all([
+            CourseService.getCourseById(courseId),
+            LessonService.getAllLessons(courseId),
+        ])
+        if (courseDetailResponse.status === 200) {
+            course.value = courseDetailResponse.data
+        }
+        if (lessonsResponse.status === 200) {
+            lessons.value = lessonsResponse.data
         }
     } catch (error) {
         console.error('Error fetching course detail:', error)
@@ -241,18 +210,17 @@ onMounted(() => {
 
                     <el-collapse v-model="activeModules" class="modules">
                         <el-collapse-item
-                            v-for="m in modules"
-                            :key="m.id"
-                            :name="m.id"
+                            key="m1"
+                            name="m1"
                         >
                             <template #title>
-                                <div class="module-title">{{ m.title }}</div>
+                                <div class="module-title">All Lessons</div>
                             </template>
 
                             <div class="lessons">
                                 <div
                                     class="lesson-item"
-                                    v-for="l in m.lessons"
+                                    v-for="l in lessons"
                                     :key="l.id"
                                 >
                                     <div class="lesson-left">
@@ -263,7 +231,7 @@ onMounted(() => {
                                             l.title
                                         }}</span>
                                         <el-tag
-                                            v-if="l.free"
+                                            v-if="l.access_level === 'FREE'"
                                             size="small"
                                             effect="plain"
                                             round
@@ -272,8 +240,8 @@ onMounted(() => {
                                     </div>
                                     <div class="lesson-right">
                                         <span class="lesson-duration">{{
-                                            l.duration
-                                        }}</span>
+                                            l.duration_minutes
+                                        }} minutes</span>
                                     </div>
                                 </div>
                             </div>

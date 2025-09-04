@@ -4,8 +4,8 @@ import { AxiosResponse } from 'axios'
 import { CourseResponse, TopByCategoriesResponse } from '@/interfaces/course'
 
 class CourseService {
-    async getAllCourses(): Promise<AxiosResponse<CourseResponse[]>> {
-        return http.get(COURSE_API.ALL_COURSES)
+    async getAllCourses(params: any): Promise<AxiosResponse<CourseResponse[]>> {
+        return http.get(COURSE_API.ALL_COURSES(params))
     }
 
     async getCourseById(

@@ -1,20 +1,51 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import CourseCard from '@/components/cards/CourseCard.vue'
 import CourseService from '@/services/course'
-import { ArrowRight, Right } from '@element-plus/icons-vue'
-import { TopByCategoriesResponse } from '@/interfaces/course'
+import { ArrowLeft, ArrowRight, Right } from '@element-plus/icons-vue'
+import { CourseResponse, TopByCategoriesResponse } from '@/interfaces/course'
 import { ElNotification } from 'element-plus'
+import { useRoute, useRouter } from 'vue-router'
+import { PATHS } from '@/router/paths'
 
 const loading = ref(false)
-const courses = ref<TopByCategoriesResponse[]>()
+const topCourses = ref<TopByCategoriesResponse[]>([])
+const flatCourses = ref<CourseResponse[]>([])
+const router = useRouter()
+const route = useRoute()
+const category = computed(() => route.query.category as string | undefined)
+const currentPage = ref(1)
+const pageSize = 6
+const pagedCourses = computed(() => {
+    const startIndex = (currentPage.value - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    return flatCourses.value.slice(startIndex, endIndex)
+})
 
-const fetchCourses = async () => {
+const fetchTopCourses = async () => {
     loading.value = true
-    try {
+    try {   
         const response = await CourseService.topByCategories()
         if (response.status === 200) {
-            courses.value = response.data
+            topCourses.value = response.data
+        }
+    } catch (error) {
+        ElNotification({
+            title: 'Error',
+            message: 'Loading courses failed. Please try again.',
+            type: 'error',
+        })
+    } finally {
+        loading.value = false
+    }
+}
+
+const fetchAllCourses = async (params: any) => {
+    loading.value = true
+    try {
+        const response = await CourseService.getAllCourses(params)
+        if (response.status === 200) {
+            flatCourses.value = response.data
         }
     } catch (error) {
         ElNotification({
@@ -28,60 +59,115 @@ const fetchCourses = async () => {
 }
 
 onMounted(() => {
-    fetchCourses()
+    if (category.value) {
+        fetchAllCourses({ categories: category.value })
+    } else {
+        fetchTopCourses()
+    }
+})
+
+watch(category, () => {
+    currentPage.value = 1
+    if (category.value) {
+        fetchAllCourses({ categories: category.value })
+    } else {
+        fetchTopCourses()
+    }
 })
 </script>
 
 <template>
     <div class="page-container">
         <el-breadcrumb class="course-breadcrumb" :separator-icon="ArrowRight">
-            <el-breadcrumb-item :to="{ path: '/' }">Home</el-breadcrumb-item>
-            <el-breadcrumb-item>Courses</el-breadcrumb-item>
+            <el-breadcrumb-item style="cursor: pointer !important;" :to="{ path: PATHS.HOME }">Home</el-breadcrumb-item>
+            <el-breadcrumb-item style="cursor: pointer !important;" :to="{ path: PATHS.COURSES }">Courses</el-breadcrumb-item>
+            <el-breadcrumb-item v-if="category">Category</el-breadcrumb-item>
+            <el-breadcrumb-item v-if="category">{{ category }}</el-breadcrumb-item>
         </el-breadcrumb>
 
-        <div
-            v-for="course in courses"
-            :key="course.category"
-            class="course-section"
-        >
-            <el-skeleton v-if="loading" animated>
-                <template #template>
-                    <el-skeleton-item
-                        variant="h1"
-                        style="
-                            margin: 13px 0 12px 0;
-                            font-size: 30px;
-                            max-width: 150px;
-                            min-height: 36px;
-                        "
-                    />
-                </template>
-            </el-skeleton>
-            <h1 class="section-title" v-else>{{ course.category }}</h1>
-            <el-row gutter="20">
-                <el-col :span="7" v-for="topCourse in course.courses">
-                    <CourseCard
-                        :key="topCourse.id"
-                        :course="topCourse"
-                        :loading="loading"
-                    />
-                </el-col>
-                <el-col
-                    :span="3"
-                    class="d-flex justify-center align-center"
-                    v-if="course.courses.length >= 3"
-                >
-                    <el-button
-                        class="more-button"
-                        v-if="course.courses.length >= 3"
-                        :icon="Right"
-                        type="success"
-                        plain
-                        circle
-                    />
-                </el-col>
-            </el-row>
-        </div>
+        <template v-if="category">
+            <div
+                class="course-section"
+            >
+                <el-skeleton v-if="loading" animated>
+                    <template #template>
+                        <el-skeleton-item
+                            variant="h1"
+                            style="
+                                margin: 13px 0 12px 0;
+                                font-size: 30px;
+                                max-width: 150px;
+                                min-height: 36px;
+                            "
+                        />
+                    </template>
+                </el-skeleton>
+                <h1 class="section-title" v-else>Category: {{ category }}</h1>
+                <el-row gutter="20">
+                    <el-col :span="7" v-for="topCourse in pagedCourses" :key="topCourse.id">
+                        <CourseCard
+                            :course="topCourse"
+                            :loading="loading"
+                        />
+                    </el-col>
+                </el-row>
+                <div class="d-flex justify-center" style="margin-top: 16px;">
+                    <el-pagination
+                        background
+                        layout="prev, pager, next"
+                        :page-size="pageSize"
+                        :total="flatCourses.length"
+                        v-model:current-page="currentPage"
+                    >
+                    </el-pagination>
+                </div>
+            </div>
+        </template>
+        <template v-else>
+            <div
+                v-for="group in topCourses"
+                :key="group.category"
+                class="course-section"
+            >
+                <el-skeleton v-if="loading" animated>
+                    <template #template>
+                        <el-skeleton-item
+                            variant="h1"
+                            style="
+                                margin: 13px 0 12px 0;
+                                font-size: 30px;
+                                max-width: 150px;
+                                min-height: 36px;
+                            "
+                        />
+                    </template>
+                </el-skeleton>
+                <h1 class="section-title" v-else>{{ group.category }}</h1>
+                <el-row gutter="20">
+                    <el-col :span="7" v-for="topCourse in group.courses" :key="topCourse.id">
+                        <CourseCard
+                            :course="topCourse"
+                            :loading="loading"
+                        />
+                    </el-col>
+                    <el-col
+                        :span="3"
+                        class="d-flex justify-center align-center"
+                        v-if="group.courses.length >= 3"
+                    >
+                        <el-button
+                            class="more-button"
+                            v-if="group.courses.length >= 3"
+                            :icon="Right"
+                            type="success"
+                            plain
+                            circle
+                            @click="router.push(`/courses?category=${group.category}`)"
+                        />
+                    </el-col>
+                </el-row>
+            </div>
+        </template>
     </div>
 </template>
 
@@ -123,6 +209,13 @@ onMounted(() => {
 
 .course-breadcrumb .el-breadcrumb__inner {
     color: #636ae8ff !important;
+}
+
+/* Pagination active page to success color */
+.el-pagination.is-background .el-pager li.is-active {
+    background-color: var(--el-color-success) !important;
+    border-color: var(--el-color-success) !important;
+    color: #fff !important;
 }
 
 @media (max-width: 768px) {
