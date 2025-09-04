@@ -44,9 +44,9 @@ const router = createRouter({
                     meta: { requiresAuth: true },
                 },
                 {
-                    path: PATHS.ACCOUNT_SETTING,
+                    path: PATHS.ACCOUNT_SETTINGS,
                     component: AccountSettingView,
-                    name: 'account-setting',
+                    name: 'account-settings',
                     meta: { requiresAuth: true },
                 },
             ],

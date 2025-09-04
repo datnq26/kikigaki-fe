@@ -4,7 +4,7 @@ export const AUTH_API = {
     REGISTER: '/register',
     REFRESH_TOKEN: '/token/refresh',
     VERIFY_TOKEN: '/token/verify',
-    ME: '/me',
+    ME: '/user/me',
 }
 
 export const USER_API = {
@@ -16,6 +16,8 @@ export const USER_API = {
     CREATE_USER: '/user',
     USER_BY_ID: (userId: any) => `/user/${userId}`,
     CHANGE_PASSWORD: (userId: any) => `/user/change-password/${userId}`,
+    UPDATE_ACCOUNT: '/user/update-account',
+    UPDATE_AVATAR: '/user/update-avatar',
 }
 
 export const LESSON_API = {
