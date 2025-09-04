@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ref, onMounted, watch, reactive } from 'vue'
+import { ElMessage, ElForm } from 'element-plus'
 import { UpdateAccountRequest } from '@/interfaces/user'
 import UserService from '@/services/user'
-<<<<<<< Updated upstream
-=======
 import { capitalize } from '@/utils/format'
 import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
 import { UpdateAvatarRequest, UserResponse } from '@/interfaces/user'
->>>>>>> Stashed changes
+import { DEFAULT_AVATAR_URL, BASE_IMAGE_URL } from '@/constants/image'
+import { FormRules } from 'element-plus'
 
 const userInfoRequest = ref<UpdateAccountRequest>({
     username: '',
@@ -16,25 +15,34 @@ const userInfoRequest = ref<UpdateAccountRequest>({
     last_name: '',
 })
 
+const urlAvatar = ref('')
 const userService = UserService
 const isUpdateSuccess = ref(false)
 const isLoading = ref(false)
 const isFormValid = ref(true)
 const authenticationStore = useAuthenticationStore()
+const formRef = ref<typeof ElForm | null>(null)
 const originalData = ref<UserResponse>({
     username: '',
     first_name: '',
     last_name: '',
     email: '',
-<<<<<<< Updated upstream
-=======
     access_level: 'Free',
     avatar: '',
     last_login: '',
     is_active: false,
     is_staff: false,
-    name: ''
->>>>>>> Stashed changes
+    name: '',
+})
+
+const rules = reactive<FormRules>({
+    username: [
+        {
+            required: true,
+            message: 'Please input your username',
+            trigger: 'blur',
+        },
+    ],
 })
 
 const loadUserData = async () => {
@@ -47,83 +55,51 @@ const loadUserData = async () => {
                 first_name: authenticationStore.userInfo.first_name || '',
                 last_name: authenticationStore.userInfo.last_name || '',
             }
-<<<<<<< Updated upstream
-            userInfoRequest.value = { 
-                ...userData, 
-            }
-            originalData.value = { 
-                ...userData, 
-                email: response.data.email || '' 
-            }
-=======
             urlAvatar.value = authenticationStore.userInfo.avatar || ''
->>>>>>> Stashed changes
         }
     } catch (error) {
         ElMessage.error('Failed to load user data')
     }
 }
 
-<<<<<<< Updated upstream
-=======
-
-
 const updateAvatar = async (file?: File) => {
     try {
-        let payload: UpdateAvatarRequest = {}
-        
         if (file) {
-            const reader = new FileReader()
-            reader.onload = async () => {
-                payload.avatar = reader.result as string
-                const response = await userService.updateAvatar(payload)
-                if (response.status === 200) {
-                    urlAvatar.value = response.data.avatar
-                    console.log(response)
-                    ElMessage.success('Avatar updated successfully')
-                }
-                else {
-                    ElMessage.error('Failed to update avatar')
-                }
+            const payload: UpdateAvatarRequest = { avatar: file }
+            const response = await userService.updateAvatar(payload)
+            if (response.status === 200) {
+                urlAvatar.value = response.data.avatar
+                ElMessage.success('Avatar updated successfully')
+            } else {
+                ElMessage.error('Failed to update avatar')
             }
-            reader.readAsDataURL(file)
         } else {
             const response = await userService.updateAvatar({})
             if (response.status === 200) {
-                urlAvatar.value = ''
+                urlAvatar.value = DEFAULT_AVATAR_URL
                 ElMessage.success('Avatar removed successfully')
-            }
-            else {
+            } else {
                 ElMessage.error('Failed to remove avatar')
             }
         }
     } catch (error) {
-        console.error('Error updating avatar:', error)
+        console.error(error)
         ElMessage.error('Failed to update avatar')
     }
 }
 
->>>>>>> Stashed changes
-const validateForm = () => {
-    isFormValid.value = true
-    
-    if (!userInfoRequest.value.username?.trim()) {
-        ElMessage.warning('Username is required')
-        isFormValid.value = false
-        return false
-    }
-    
-    return true
+const submitForm = (formEl: typeof ElForm | null) => {
+    if (!formEl) return
+    formEl.validate(async (valid: any) => {
+        if (!valid) return false
+        await handleUpdateAccountInfo()
+    })
 }
 
 const handleUpdateAccountInfo = async () => {
-    if (!validateForm()) {
-        return
-    }
-    
     isLoading.value = true
     isUpdateSuccess.value = false
-    
+
     try {
         const response = await userService.updateAccount(userInfoRequest.value)
         if (response.status === 200) {
@@ -158,7 +134,14 @@ onMounted(() => {
             <div></div>
             <div>
                 <div class="flex justify-center card">
-                    <el-card style="max-width: 100%; padding-left: 25px; padding-right: 25px;" class="profile-card">
+                    <el-card
+                        style="
+                            max-width: 100%;
+                            padding-left: 25px;
+                            padding-right: 25px;
+                        "
+                        class="profile-card"
+                    >
                         <div
                             style="
                                 gap: 8px;
@@ -183,24 +166,30 @@ onMounted(() => {
                                 <el-image
                                     class="avatar"
                                     style="width: 100px; height: 100px"
-                                    src="http://localhost:8000/media/images/avatars/default.jpg"
                                     fit="cover"
+                                    :src="`${BASE_IMAGE_URL}${urlAvatar}`"
                                 />
                             </div>
                             <div class="handle-avatar-buttons">
-                                <el-button type="default" style="">
-                                    <el-text type="primary"
-                                        >Upload new picture</el-text
-                                    >
-                                </el-button>
+                                <el-upload
+                                    :auto-upload="false"
+                                    :show-file-list="false"
+                                    accept="image/*"
+                                    @change="
+                                        (file: any) => updateAvatar(file.raw)
+                                    "
+                                >
+                                    <el-button type="default" style="">
+                                        <el-text type="primary"
+                                            >Upload new picture</el-text
+                                        >
+                                    </el-button>
+                                </el-upload>
                                 <el-button
                                     type="default"
                                     text
                                     style="margin: 0%"
-<<<<<<< Updated upstream
-=======
                                     @click="updateAvatar()"
->>>>>>> Stashed changes
                                 >
                                     <el-text type="danger"
                                         >Remove picture</el-text
@@ -213,7 +202,14 @@ onMounted(() => {
             </div>
             <div>
                 <div class="flex justify-center card">
-                    <el-card style="max-width: 100%; padding-left: 25px; padding-right: 25px;" class="profile-card" >
+                    <el-card
+                        style="
+                            max-width: 100%;
+                            padding-left: 25px;
+                            padding-right: 25px;
+                        "
+                        class="profile-card"
+                    >
                         <div
                             style="
                                 gap: 8px;
@@ -233,41 +229,79 @@ onMounted(() => {
                                 >
                             </div>
                         </div>
-                        <el-form class="personal-details">
+                        <el-form
+                            class="personal-details"
+                            :rules="rules"
+                            ref="formRef"
+                            :model="userInfoRequest"
+                            @submit.prevent="submitForm(formRef)"
+                        >
                             <div class="personel-credentials">
                                 <div class="input">
-                                    <el-form-item style="width: 100%" label="First Name" label-position="top">
+                                    <el-form-item
+                                        style="width: 100%"
+                                        label="First Name"
+                                        label-position="top"
+                                        prop="first_name"
+                                    >
                                         <el-input
                                             v-model="userInfoRequest.first_name"
                                             style="width: 100%"
                                             placeholder="First Name"
                                             :disabled="isLoading"
-                                            :class="{ 'is-error': !isFormValid && !userInfoRequest.first_name.trim() }"
+                                            :class="{
+                                                'is-error':
+                                                    !isFormValid &&
+                                                    !userInfoRequest.first_name.trim(),
+                                            }"
                                         />
                                     </el-form-item>
-                                    <el-form-item style="width: 100%" label="Last Name" label-position="top">
+                                    <el-form-item
+                                        style="width: 100%"
+                                        label="Last Name"
+                                        label-position="top"
+                                        prop="last_name"
+                                    >
                                         <el-input
                                             v-model="userInfoRequest.last_name"
                                             style="width: 100%"
                                             placeholder="Last Name"
                                             :disabled="isLoading"
-                                            :class="{ 'is-error': !isFormValid && !userInfoRequest.last_name.trim() }"
+                                            :class="{
+                                                'is-error':
+                                                    !isFormValid &&
+                                                    !userInfoRequest.last_name.trim(),
+                                            }"
                                         />
                                     </el-form-item>
                                 </div>
                             </div>
                             <div class="personel-credentials">
                                 <div class="input">
-                                    <el-form-item style="width: 100%" label="Username" label-position="top">
+                                    <el-form-item
+                                        style="width: 100%"
+                                        label="Username"
+                                        label-position="top"
+                                        prop="username"
+                                    >
                                         <el-input
                                             v-model="userInfoRequest.username"
                                             style="width: 100%"
                                             placeholder="Username"
                                             :disabled="isLoading"
-                                            :class="{ 'is-error': !isFormValid && !userInfoRequest.username.trim() }"
+                                            :class="{
+                                                'is-error':
+                                                    !isFormValid &&
+                                                    !userInfoRequest.username.trim(),
+                                            }"
                                         />
                                     </el-form-item>
-                                    <el-form-item style="width: 100%" label="Email Address" label-position="top">
+                                    <el-form-item
+                                        style="width: 100%"
+                                        label="Email Address"
+                                        label-position="top"
+                                        prop="email"
+                                    >
                                         <el-input
                                             style="width: 100%"
                                             placeholder="Email Address"
@@ -277,22 +311,38 @@ onMounted(() => {
                                     </el-form-item>
                                 </div>
                             </div>
-                        </el-form>
-                        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 2%">
-                            <el-button
-                                type="primary"
-                                :loading="isLoading"
-                                :disabled="isLoading"
-                                @click="handleUpdateAccountInfo"
-                                >Save Changes</el-button
+                            <div
+                                style="
+                                    display: flex;
+                                    justify-content: flex-end;
+                                    gap: 10px;
+                                    margin-top: 2%;
+                                "
                             >
-                        </div>
+                                <el-form-item>
+                                    <el-button
+                                        type="primary"
+                                        :loading="isLoading"
+                                        :disabled="isLoading"
+                                        native-type="submit"
+                                        >Save Changes</el-button
+                                    >
+                                </el-form-item>
+                            </div>
+                        </el-form>
                     </el-card>
                 </div>
             </div>
             <div>
                 <div class="flex justify-center card">
-                    <el-card style="max-width: 100%; padding-left: 25px; padding-right: 25px;" class="profile-card">
+                    <el-card
+                        style="
+                            max-width: 100%;
+                            padding-left: 25px;
+                            padding-right: 25px;
+                        "
+                        class="profile-card"
+                    >
                         <div
                             style="
                                 gap: 8px;
@@ -326,26 +376,16 @@ onMounted(() => {
                                 <el-text class="mx-1" size="small"
                                     >Current Plan:
                                 </el-text>
-<<<<<<< Updated upstream
-                                <el-text class="mx-1" size="small" tag="b"
-                                    >Free</el-text
-                                >
-=======
                                 <el-text class="mx-1" size="small" tag="b">
-                                    {{ originalData.access_level }}    
+                                    {{ originalData.access_level }}
                                 </el-text>
->>>>>>> Stashed changes
                             </div>
                             <div>
                                 <el-text class="mx-1" size="small"
                                     >Renewal Date:
                                 </el-text>
                                 <el-text class="mx-1" size="small" tag="b"
-<<<<<<< Updated upstream
-                                    >October 26, 2025</el-text
-=======
                                     >Permanently</el-text
->>>>>>> Stashed changes
                                 >
                             </div>
                         </div>

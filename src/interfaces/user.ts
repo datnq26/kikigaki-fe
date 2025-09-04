@@ -24,7 +24,7 @@ export interface UpdateAccountResponse {
 }
 
 export interface UpdateAvatarRequest {
-    avatar?: string
+    avatar?: File
 }
 
 export interface UpdateAvatarResponse {

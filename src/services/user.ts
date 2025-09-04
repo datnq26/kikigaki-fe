@@ -3,7 +3,7 @@ import { USER_API } from '@/constants/api'
 import { AxiosResponse } from 'axios'
 
 import {
-    UpdateAccountRequest, 
+    UpdateAccountRequest,
     UpdateAccountResponse,
     UpdateAvatarRequest,
     UpdateAvatarResponse,
@@ -14,13 +14,15 @@ class UserService {
         return await http.get(USER_API.GET_CURRENT_USER)
     }
 
-    async updateAccount(payload: UpdateAccountRequest): Promise<AxiosResponse<UpdateAccountResponse>> {
+    async updateAccount(
+        payload: UpdateAccountRequest
+    ): Promise<AxiosResponse<UpdateAccountResponse>> {
         return await http.patch(USER_API.UPDATE_ACCOUNT, payload)
     }
-<<<<<<< Updated upstream
-=======
 
-    async updateAvatar(payload: UpdateAvatarRequest): Promise<AxiosResponse<UpdateAvatarResponse>> {
+    async updateAvatar(
+        payload: UpdateAvatarRequest
+    ): Promise<AxiosResponse<UpdateAvatarResponse>> {
         const formData = new FormData()
         if (payload.avatar) {
             formData.append('avatar', payload.avatar)
@@ -28,7 +30,6 @@ class UserService {
         }
         return await http.patch(USER_API.UPDATE_AVATAR)
     }
->>>>>>> Stashed changes
 }
 
 export default new UserService()
