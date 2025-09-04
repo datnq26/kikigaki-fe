@@ -4,7 +4,7 @@ export const AUTH_API = {
     REGISTER: '/register',
     REFRESH_TOKEN: '/token/refresh',
     VERIFY_TOKEN: '/token/verify',
-    ME: '/me',
+    ME: '/user/me',
 }
 
 export const USER_API = {
@@ -16,7 +16,12 @@ export const USER_API = {
     CREATE_USER: '/user',
     USER_BY_ID: (userId: any) => `/user/${userId}`,
     CHANGE_PASSWORD: (userId: any) => `/user/change-password/${userId}`,
+<<<<<<< Updated upstream
     UPDATE_ACCOUNT: (username: string | null, first_name: string | null, last_name: string | null) => '/user/update-account',
+=======
+    UPDATE_ACCOUNT: '/user/update-account',
+    UPDATE_AVATAR: '/user/update-avatar',
+>>>>>>> Stashed changes
 }
 
 export const LESSON_API = {

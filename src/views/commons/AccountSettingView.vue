@@ -1,8 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UpdateAccountRequest } from '@/interfaces/user'
 import UserService from '@/services/user'
+<<<<<<< Updated upstream
+=======
+import { capitalize } from '@/utils/format'
+import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
+import { UpdateAvatarRequest, UserResponse } from '@/interfaces/user'
+>>>>>>> Stashed changes
 
 const userInfoRequest = ref<UpdateAccountRequest>({
     username: '',
@@ -14,22 +20,34 @@ const userService = UserService
 const isUpdateSuccess = ref(false)
 const isLoading = ref(false)
 const isFormValid = ref(true)
-const originalData = ref({
+const authenticationStore = useAuthenticationStore()
+const originalData = ref<UserResponse>({
     username: '',
     first_name: '',
     last_name: '',
     email: '',
+<<<<<<< Updated upstream
+=======
+    access_level: 'Free',
+    avatar: '',
+    last_login: '',
+    is_active: false,
+    is_staff: false,
+    name: ''
+>>>>>>> Stashed changes
 })
 
 const loadUserData = async () => {
     try {
-        const response = await userService.getCurrentUser()
-        if (response.status === 200 && response.data) {
-            const userData = {
-                username: response.data.username || '',
-                first_name: response.data.first_name || '',
-                last_name: response.data.last_name || '',
+        await authenticationStore.loadFromServer()
+        if (authenticationStore.userInfo) {
+            originalData.value = authenticationStore.userInfo
+            userInfoRequest.value = {
+                username: authenticationStore.userInfo.username || '',
+                first_name: authenticationStore.userInfo.first_name || '',
+                last_name: authenticationStore.userInfo.last_name || '',
             }
+<<<<<<< Updated upstream
             userInfoRequest.value = { 
                 ...userData, 
             }
@@ -37,13 +55,55 @@ const loadUserData = async () => {
                 ...userData, 
                 email: response.data.email || '' 
             }
+=======
+            urlAvatar.value = authenticationStore.userInfo.avatar || ''
+>>>>>>> Stashed changes
         }
     } catch (error) {
-        console.error('Error loading user data:', error)
         ElMessage.error('Failed to load user data')
     }
 }
 
+<<<<<<< Updated upstream
+=======
+
+
+const updateAvatar = async (file?: File) => {
+    try {
+        let payload: UpdateAvatarRequest = {}
+        
+        if (file) {
+            const reader = new FileReader()
+            reader.onload = async () => {
+                payload.avatar = reader.result as string
+                const response = await userService.updateAvatar(payload)
+                if (response.status === 200) {
+                    urlAvatar.value = response.data.avatar
+                    console.log(response)
+                    ElMessage.success('Avatar updated successfully')
+                }
+                else {
+                    ElMessage.error('Failed to update avatar')
+                }
+            }
+            reader.readAsDataURL(file)
+        } else {
+            const response = await userService.updateAvatar({})
+            if (response.status === 200) {
+                urlAvatar.value = ''
+                ElMessage.success('Avatar removed successfully')
+            }
+            else {
+                ElMessage.error('Failed to remove avatar')
+            }
+        }
+    } catch (error) {
+        console.error('Error updating avatar:', error)
+        ElMessage.error('Failed to update avatar')
+    }
+}
+
+>>>>>>> Stashed changes
 const validateForm = () => {
     isFormValid.value = true
     
@@ -98,7 +158,7 @@ onMounted(() => {
             <div></div>
             <div>
                 <div class="flex justify-center card">
-                    <el-card style="max-width: 100%" class="profile-card">
+                    <el-card style="max-width: 100%; padding-left: 25px; padding-right: 25px;" class="profile-card">
                         <div
                             style="
                                 gap: 8px;
@@ -137,6 +197,10 @@ onMounted(() => {
                                     type="default"
                                     text
                                     style="margin: 0%"
+<<<<<<< Updated upstream
+=======
+                                    @click="updateAvatar()"
+>>>>>>> Stashed changes
                                 >
                                     <el-text type="danger"
                                         >Remove picture</el-text
@@ -149,7 +213,7 @@ onMounted(() => {
             </div>
             <div>
                 <div class="flex justify-center card">
-                    <el-card style="max-width: 100%" class="profile-card">
+                    <el-card style="max-width: 100%; padding-left: 25px; padding-right: 25px;" class="profile-card" >
                         <div
                             style="
                                 gap: 8px;
@@ -169,49 +233,51 @@ onMounted(() => {
                                 >
                             </div>
                         </div>
-                        <div class="personal-details">
+                        <el-form class="personal-details">
                             <div class="personel-credentials">
                                 <div class="input">
-                                    <div><el-text>First Name</el-text></div>
-                                    <el-input
-                                        v-model="userInfoRequest.first_name"
-                                        style="width: 100%"
-                                        placeholder="First Name"
-                                        :disabled="isLoading"
-                                        :class="{ 'is-error': !isFormValid && !userInfoRequest.first_name.trim() }"
-                                    />
-                                    <div><el-text>Last Name</el-text></div>
-                                    <el-input
-                                        v-model="userInfoRequest.last_name"
-                                        style="width: 100%"
-                                        placeholder="Last Name"
-                                        :disabled="isLoading"
-                                        :class="{ 'is-error': !isFormValid && !userInfoRequest.last_name.trim() }"
-                                    />
+                                    <el-form-item style="width: 100%" label="First Name" label-position="top">
+                                        <el-input
+                                            v-model="userInfoRequest.first_name"
+                                            style="width: 100%"
+                                            placeholder="First Name"
+                                            :disabled="isLoading"
+                                            :class="{ 'is-error': !isFormValid && !userInfoRequest.first_name.trim() }"
+                                        />
+                                    </el-form-item>
+                                    <el-form-item style="width: 100%" label="Last Name" label-position="top">
+                                        <el-input
+                                            v-model="userInfoRequest.last_name"
+                                            style="width: 100%"
+                                            placeholder="Last Name"
+                                            :disabled="isLoading"
+                                            :class="{ 'is-error': !isFormValid && !userInfoRequest.last_name.trim() }"
+                                        />
+                                    </el-form-item>
                                 </div>
                             </div>
                             <div class="personel-credentials">
                                 <div class="input">
-                                    <div><el-text>Username</el-text></div>
-                                    <el-input
-                                        v-model="userInfoRequest.username"
-                                        style="width: 100%"
-                                        placeholder="Username"
-                                        :disabled="isLoading"
-                                        :class="{ 'is-error': !isFormValid && !userInfoRequest.username.trim() }"
-                                    />
-                                </div>
-                                <div class="input">
-                                    <div><el-text>Email Address</el-text></div>
-                                    <el-input
-                                        style="width: 100%"
-                                        placeholder="Email Address"
-                                        :value="originalData.email"
-                                        disabled
-                                    />
+                                    <el-form-item style="width: 100%" label="Username" label-position="top">
+                                        <el-input
+                                            v-model="userInfoRequest.username"
+                                            style="width: 100%"
+                                            placeholder="Username"
+                                            :disabled="isLoading"
+                                            :class="{ 'is-error': !isFormValid && !userInfoRequest.username.trim() }"
+                                        />
+                                    </el-form-item>
+                                    <el-form-item style="width: 100%" label="Email Address" label-position="top">
+                                        <el-input
+                                            style="width: 100%"
+                                            placeholder="Email Address"
+                                            :value="originalData.email"
+                                            disabled
+                                        />
+                                    </el-form-item>
                                 </div>
                             </div>
-                        </div>
+                        </el-form>
                         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 2%">
                             <el-button
                                 type="primary"
@@ -226,7 +292,7 @@ onMounted(() => {
             </div>
             <div>
                 <div class="flex justify-center card">
-                    <el-card style="max-width: 100%" class="profile-card">
+                    <el-card style="max-width: 100%; padding-left: 25px; padding-right: 25px;" class="profile-card">
                         <div
                             style="
                                 gap: 8px;
@@ -260,16 +326,26 @@ onMounted(() => {
                                 <el-text class="mx-1" size="small"
                                     >Current Plan:
                                 </el-text>
+<<<<<<< Updated upstream
                                 <el-text class="mx-1" size="small" tag="b"
                                     >Free</el-text
                                 >
+=======
+                                <el-text class="mx-1" size="small" tag="b">
+                                    {{ originalData.access_level }}    
+                                </el-text>
+>>>>>>> Stashed changes
                             </div>
                             <div>
                                 <el-text class="mx-1" size="small"
                                     >Renewal Date:
                                 </el-text>
                                 <el-text class="mx-1" size="small" tag="b"
+<<<<<<< Updated upstream
                                     >October 26, 2025</el-text
+=======
+                                    >Permanently</el-text
+>>>>>>> Stashed changes
                                 >
                             </div>
                         </div>
@@ -318,9 +394,10 @@ onMounted(() => {
 
 .input {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     width: 100%;
-    gap: 5px;
+    max-width: 100%;
+    gap: 24px;
 }
 
 .profile-acess-level {
@@ -345,7 +422,7 @@ onMounted(() => {
 .profile-card {
     width: 100%;
     padding-bottom: 25px;
-    padding-left: 25px;
+    padding-top: 25px;
 }
 
 .handle-avatar-buttons {
