@@ -4,11 +4,15 @@ import { LessonResponse } from '@/interfaces/lesson'
 import { AxiosResponse } from 'axios'
 
 class LessonService {
-    async getAllLessons(courseId: number | null = null): Promise<AxiosResponse<LessonResponse[]>> {
+    async getAllLessons(
+        courseId: number | null = null
+    ): Promise<AxiosResponse<LessonResponse[]>> {
         return await http.get(LESSON_API.ALL_LESSONS(courseId))
     }
 
-    async getLessonById(lessonId: number): Promise<AxiosResponse<LessonResponse>> {
+    async getLessonById(
+        lessonId: number
+    ): Promise<AxiosResponse<LessonResponse>> {
         return await http.get(LESSON_API.LESSON_BY_ID(lessonId))
     }
 }
