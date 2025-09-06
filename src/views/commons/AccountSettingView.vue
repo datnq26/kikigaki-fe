@@ -387,7 +387,7 @@ onMounted(() => {
                                     >Current Plan:
                                 </el-text>
                                 <el-text class="mx-1" size="small" tag="b">
-                                    {{ originalData.access_level }}
+                                    {{ capitalize(originalData.access_level) }}
                                 </el-text>
                             </div>
                             <div>
