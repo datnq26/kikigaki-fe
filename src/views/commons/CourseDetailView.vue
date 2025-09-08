@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
     CircleCheck,
     Clock,
@@ -15,7 +15,11 @@ import CourseService from '@/services/course'
 import LessonService from '@/services/lesson'
 import { LessonResponse } from '@/interfaces/lesson'
 
+import { ArrowRight } from '@element-plus/icons-vue'
+import { PATHS } from '@/router/paths'
+
 const route = useRoute()
+const router = useRouter()
 const courseId = Number(route.params.courseId)
 const isWishlisted = ref(false)
 const toggleWishlist = () => {
@@ -120,6 +124,20 @@ onMounted(() => {
 
 <template>
     <div class="page-container">
+        <el-breadcrumb class="course-breadcrumb" :separator-icon="ArrowRight">
+            <el-breadcrumb-item
+                style="cursor: pointer !important"
+                :to="{ path: PATHS.HOME }"
+                >Home</el-breadcrumb-item
+            >
+            <el-breadcrumb-item
+                style="cursor: pointer !important"
+                :to="{ path: PATHS.COURSES }"
+                >Courses</el-breadcrumb-item
+            >
+            <el-breadcrumb-item>{{ course.name }}</el-breadcrumb-item>
+        </el-breadcrumb>
+
         <el-row :gutter="48">
             <el-col :span="18">
                 <el-card
@@ -209,10 +227,7 @@ onMounted(() => {
                     </p>
 
                     <el-collapse v-model="activeModules" class="modules">
-                        <el-collapse-item
-                            key="m1"
-                            name="m1"
-                        >
+                        <el-collapse-item key="m1" name="m1">
                             <template #title>
                                 <div class="module-title">All Lessons</div>
                             </template>
@@ -239,9 +254,12 @@ onMounted(() => {
                                         </el-tag>
                                     </div>
                                     <div class="lesson-right">
-                                        <span class="lesson-duration">{{
-                                            l.duration_minutes
-                                        }} minutes</span>
+                                        <span class="lesson-duration"
+                                            >{{
+                                                l.duration_minutes
+                                            }}
+                                            minutes</span
+                                        >
                                     </div>
                                 </div>
                             </div>
@@ -336,6 +354,7 @@ onMounted(() => {
                                 v-for="cat in course.categories"
                                 :key="cat"
                                 class="category-tag"
+                                @click="router.push(`/courses?category=${cat}`)"
                             >
                                 {{ cat }}
                             </el-tag>
@@ -348,6 +367,10 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.course-breadcrumb {
+    margin-bottom: 13px;
+}
+
 .hero-card {
     border-radius: 12px;
     overflow: hidden;

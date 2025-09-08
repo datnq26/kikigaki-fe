@@ -45,5 +45,17 @@ export const COURSE_API = {
         return `/courses?${query}`
     },
     COURSE_BY_ID: (courseId: number) => `/courses/${courseId}`,
-    TOP_BY_CATEGORIES: '/courses/top-by-categories',
+    TOP_BY_CATEGORIES: (params: any) => {
+        const query = Object.keys(params)
+            .filter(
+                (key) =>
+                    params[key] !== undefined &&
+                    params[key] !== null &&
+                    params[key] !== 0 &&
+                    params[key] !== ''
+            )
+            .map((key) => `${key}=${params[key]}`)
+            .join('&')
+        return `/courses/top-by-categories?${query}`
+    },
 }

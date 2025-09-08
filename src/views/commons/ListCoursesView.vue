@@ -3,29 +3,44 @@ import { onMounted, ref, computed, watch } from 'vue'
 import CourseCard from '@/components/cards/CourseCard.vue'
 import CourseService from '@/services/course'
 import { ArrowLeft, ArrowRight, Right } from '@element-plus/icons-vue'
-import { CourseResponse, TopByCategoriesResponse } from '@/interfaces/course'
+import {
+    CourseRequest,
+    CourseResponse,
+    TopByCategoriesResponse,
+} from '@/interfaces/course'
 import { ElNotification } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { PATHS } from '@/router/paths'
+import { PaginationRequest, PaginationResponse } from '@/interfaces/commons'
+import { extractLimitOffsetPagination } from '@/utils/extract'
 
 const loading = ref(false)
-const topCourses = ref<TopByCategoriesResponse[]>([])
-const flatCourses = ref<CourseResponse[]>([])
+const topCourses = ref<PaginationResponse<TopByCategoriesResponse>>({
+    count: 0,
+    limit: 0,
+    offset: 0,
+    current_page: 1,
+    next: '',
+    previous: '',
+    results: [],
+})
+const flatCourses = ref<PaginationResponse<CourseResponse>>({
+    count: 0,
+    limit: 0,
+    offset: 0,
+    current_page: 1,
+    next: '',
+    previous: '',
+    results: [],
+})
 const router = useRouter()
 const route = useRoute()
 const category = computed(() => route.query.category as string | undefined)
-const currentPage = ref(1)
-const pageSize = 6
-const pagedCourses = computed(() => {
-    const startIndex = (currentPage.value - 1) * pageSize
-    const endIndex = startIndex + pageSize
-    return flatCourses.value.slice(startIndex, endIndex)
-})
 
-const fetchTopCourses = async () => {
+const fetchTopCourses = async (params: PaginationRequest) => {
     loading.value = true
-    try {   
-        const response = await CourseService.topByCategories()
+    try {
+        const response = await CourseService.topByCategories(params)
         if (response.status === 200) {
             topCourses.value = response.data
         }
@@ -40,7 +55,7 @@ const fetchTopCourses = async () => {
     }
 }
 
-const fetchAllCourses = async (params: any) => {
+const fetchAllCourses = async (params: CourseRequest) => {
     loading.value = true
     try {
         const response = await CourseService.getAllCourses(params)
@@ -58,20 +73,63 @@ const fetchAllCourses = async (params: any) => {
     }
 }
 
+const handlePageTopCourseChange = (page: number) => {
+    console.log(page, topCourses.value.current_page)
+    if (page > topCourses.value.current_page && topCourses.value.next) {
+        fetchTopCourses(extractLimitOffsetPagination(topCourses.value.next))
+    } else if (
+        page < topCourses.value.current_page &&
+        topCourses.value.previous
+    ) {
+        fetchTopCourses(extractLimitOffsetPagination(topCourses.value.previous))
+    }
+}
+
+const handlePageCourseByCategoryChange = (page: number) => {
+    console.log(page, flatCourses.value.current_page)
+    if (page > flatCourses.value.current_page && flatCourses.value.next) {
+        fetchAllCourses({
+            ...extractLimitOffsetPagination(flatCourses.value.next),
+            categories: category.value ?? null,
+        })
+    } else if (
+        page < flatCourses.value.current_page &&
+        flatCourses.value.previous
+    ) {
+        fetchAllCourses({
+            ...extractLimitOffsetPagination(flatCourses.value.previous),
+            categories: category.value ?? null,
+        })
+    }
+}
+
 onMounted(() => {
     if (category.value) {
-        fetchAllCourses({ categories: category.value })
+        fetchAllCourses({
+            categories: category.value,
+            limit: null,
+            offset: null,
+        })
     } else {
-        fetchTopCourses()
+        fetchTopCourses({
+            limit: null,
+            offset: null,
+        })
     }
 })
 
 watch(category, () => {
-    currentPage.value = 1
     if (category.value) {
-        fetchAllCourses({ categories: category.value })
+        fetchAllCourses({
+            categories: category.value,
+            limit: null,
+            offset: null,
+        })
     } else {
-        fetchTopCourses()
+        fetchTopCourses({
+            limit: null,
+            offset: null,
+        })
     }
 })
 </script>
@@ -79,16 +137,24 @@ watch(category, () => {
 <template>
     <div class="page-container">
         <el-breadcrumb class="course-breadcrumb" :separator-icon="ArrowRight">
-            <el-breadcrumb-item style="cursor: pointer !important;" :to="{ path: PATHS.HOME }">Home</el-breadcrumb-item>
-            <el-breadcrumb-item style="cursor: pointer !important;" :to="{ path: PATHS.COURSES }">Courses</el-breadcrumb-item>
+            <el-breadcrumb-item
+                style="cursor: pointer !important"
+                :to="{ path: PATHS.HOME }"
+                >Home</el-breadcrumb-item
+            >
+            <el-breadcrumb-item
+                style="cursor: pointer !important"
+                :to="{ path: PATHS.COURSES }"
+                >Courses</el-breadcrumb-item
+            >
             <el-breadcrumb-item v-if="category">Category</el-breadcrumb-item>
-            <el-breadcrumb-item v-if="category">{{ category }}</el-breadcrumb-item>
+            <el-breadcrumb-item v-if="category">{{
+                category
+            }}</el-breadcrumb-item>
         </el-breadcrumb>
 
         <template v-if="category">
-            <div
-                class="course-section"
-            >
+            <div class="course-section">
                 <el-skeleton v-if="loading" animated>
                     <template #template>
                         <el-skeleton-item
@@ -104,20 +170,25 @@ watch(category, () => {
                 </el-skeleton>
                 <h1 class="section-title" v-else>Category: {{ category }}</h1>
                 <el-row gutter="20">
-                    <el-col :span="7" v-for="topCourse in pagedCourses" :key="topCourse.id">
+                    <el-col
+                        :span="7"
+                        v-for="courseByCategory in flatCourses.results"
+                        :key="courseByCategory.id"
+                    >
                         <CourseCard
-                            :course="topCourse"
+                            :course="courseByCategory"
                             :loading="loading"
                         />
                     </el-col>
                 </el-row>
-                <div class="d-flex justify-center" style="margin-top: 16px;">
+                <div class="d-flex justify-center" style="margin-top: 16px">
                     <el-pagination
                         background
                         layout="prev, pager, next"
-                        :page-size="pageSize"
-                        :total="flatCourses.length"
-                        v-model:current-page="currentPage"
+                        :page-size="flatCourses.limit"
+                        :total="flatCourses.count"
+                        :current-page="flatCourses.current_page"
+                        @current-change="handlePageCourseByCategoryChange"
                     >
                     </el-pagination>
                 </div>
@@ -125,7 +196,7 @@ watch(category, () => {
         </template>
         <template v-else>
             <div
-                v-for="group in topCourses"
+                v-for="group in topCourses.results"
                 :key="group.category"
                 class="course-section"
             >
@@ -144,11 +215,12 @@ watch(category, () => {
                 </el-skeleton>
                 <h1 class="section-title" v-else>{{ group.category }}</h1>
                 <el-row gutter="20">
-                    <el-col :span="7" v-for="topCourse in group.courses" :key="topCourse.id">
-                        <CourseCard
-                            :course="topCourse"
-                            :loading="loading"
-                        />
+                    <el-col
+                        :span="7"
+                        v-for="topCourse in group.courses"
+                        :key="topCourse.id"
+                    >
+                        <CourseCard :course="topCourse" :loading="loading" />
                     </el-col>
                     <el-col
                         :span="3"
@@ -162,10 +234,25 @@ watch(category, () => {
                             type="success"
                             plain
                             circle
-                            @click="router.push(`/courses?category=${group.category}`)"
+                            @click="
+                                router.push(
+                                    `/courses?category=${group.category}`
+                                )
+                            "
                         />
                     </el-col>
                 </el-row>
+            </div>
+            <div class="d-flex justify-center" style="margin-top: 16px">
+                <el-pagination
+                    background
+                    layout="prev, pager, next"
+                    :page-size="topCourses.limit"
+                    :total="topCourses.count"
+                    :current-page="topCourses.current_page"
+                    @current-change="handlePageTopCourseChange"
+                >
+                </el-pagination>
             </div>
         </template>
     </div>
@@ -187,6 +274,10 @@ watch(category, () => {
 .more-button {
     width: 56px !important;
     height: 56px;
+}
+
+.el-col {
+    margin-bottom: 20px;
 }
 
 @media (max-width: 768px) {
@@ -211,10 +302,8 @@ watch(category, () => {
     color: #636ae8ff !important;
 }
 
-/* Pagination active page to success color */
 .el-pagination.is-background .el-pager li.is-active {
     background-color: var(--el-color-success) !important;
-    border-color: var(--el-color-success) !important;
     color: #fff !important;
 }
 

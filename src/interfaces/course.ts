@@ -1,3 +1,5 @@
+import { PaginationRequest } from './commons'
+
 export interface CourseResponse {
     id: number
     name: string
@@ -10,4 +12,8 @@ export interface CourseResponse {
 export interface TopByCategoriesResponse {
     category: string
     courses: CourseResponse[]
+}
+
+export interface CourseRequest extends PaginationRequest {
+    categories: string | null
 }
