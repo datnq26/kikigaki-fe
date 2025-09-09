@@ -59,11 +59,11 @@ const courses = ref([
                 <div class="welcome-card-content">
                     <div class="welcome-card-streak">
                         <div>
-                            <el-image style="width: 15px; height: 15px; color: #F97316FF;" src="../../../public/fire-streak.svg" fit="fit" />
+                            <el-image style="width: 15px; height: 15px; color: #F97316FF;" src="/fire-streak.svg" fit="fit" />
                             <el-text class="highlight-color" style="color: #F88379;">15-Days Streak</el-text>
                         </div>
                         <div>
-                            <el-image style="width: 15px; height: 15px; color: #F97316FF;" src="../../../public/award.svg" fit="fit" />
+                            <el-image style="width: 15px; height: 15px; color: #F97316FF;" src="/award.svg" fit="fit" />
                             <el-text class="highlight-color" style="color: #FFC000;">1250 Bonus Points</el-text>
                         </div>
                     </div>
@@ -183,7 +183,7 @@ const courses = ref([
 }
 
 .welcome-card {
-    background-image: url("../../../public/welcome-banner.jpg");
+    background-image: url("/welcome-banner.jpg");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
