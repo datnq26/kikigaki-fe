@@ -8,7 +8,6 @@ import 'element-plus/theme-chalk/display.css'
 import './assets/css/base.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
-
 const app = createApp(App)
 
 app.use(createPinia())
