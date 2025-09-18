@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import {
     View,
     VideoPlay,
@@ -14,6 +14,8 @@ import DateStreak from '@/components/commons/DateStreak.vue'
 import { getStreakColor } from '@/utils/get'
 import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
 import { BASE_IMAGE_URL } from '@/constants/image'
+import { UserDailyActivityResponse } from '@/interfaces/daily'
+import UserDailyActivityService from '@/services/daily'
 
 const user = ref({
     name: 'Kira Sensei',
@@ -105,19 +107,68 @@ const lessons = ref<
         locked: true,
     },
 ])
+const dailyActivities = ref<UserDailyActivityResponse[] | []>([])
 
 const stats = ref({
     listCompleted: 12,
     focusTimeHours: 8.5,
 })
 
-const loginRecords = {
-    '2025-01-01': 2,
-    '2025-01-02': 1,
-    '2025-02-15': 4,
-    '2025-03-20': 3,
-    '2025-09-13': 2,
+const loginRecords: UserDailyActivityResponse[] = [
+    {
+        date: '2025-01-01',
+        completed_lessons: 2,
+        user: 1,
+        study_time_minutes: 1,
+        id: 1,
+    },
+    {
+        date: '2025-01-02',
+        completed_lessons: 1,
+        user: 1,
+        study_time_minutes: 1,
+        id: 1,
+    },
+    {
+        date: '2025-02-15',
+        completed_lessons: 4,
+        user: 1,
+        study_time_minutes: 1,
+        id: 1,
+    },
+    {
+        date: '2025-03-20',
+        completed_lessons: 3,
+        user: 1,
+        study_time_minutes: 1,
+        id: 1,
+    },
+    {
+        date: '2025-09-13',
+        completed_lessons: 2,
+        user: 1,
+        study_time_minutes: 1,
+        id: 1,
+    },
+]
+
+const fetchDailyActivities = async () => {
+    try {
+        const response =
+            await UserDailyActivityService.getAllUserDailyActivities({
+                year: '',
+            })
+        if (response.status === 200) {
+            dailyActivities.value = response.data
+        }
+    } catch (e) {
+        console.log(e)
+    }
 }
+
+onMounted(() => {
+    fetchDailyActivities()
+})
 </script>
 
 <template>
@@ -154,7 +205,7 @@ const loginRecords = {
                 <br />
                 <el-card shadow="never" class="panel">
                     <div class="section-title">⚡ Login Streak</div>
-                    <DateStreak :records="loginRecords" />
+                    <DateStreak :records="dailyActivities" />
                     <div class="legend">
                         <span>Less</span>
                         <div

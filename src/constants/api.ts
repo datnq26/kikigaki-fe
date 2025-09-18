@@ -27,7 +27,7 @@ export const LESSON_API = {
         }
         return `/lessons`
     },
-    LESSON_BY_ID: (lessonId: number) => `/lessons/${lessonId}`,
+    LESSON_BY_ID: (lessonId: number | string) => `/lessons/${lessonId}`,
 }
 
 export const COURSE_API = {
@@ -44,7 +44,7 @@ export const COURSE_API = {
             .join('&')
         return `/courses?${query}`
     },
-    COURSE_BY_ID: (courseId: number) => `/courses/${courseId}`,
+    COURSE_BY_ID: (courseId: number | string) => `/courses/${courseId}`,
     TOP_BY_CATEGORIES: (params: any) => {
         const query = Object.keys(params)
             .filter(
@@ -58,4 +58,23 @@ export const COURSE_API = {
             .join('&')
         return `/courses/top-by-categories?${query}`
     },
+}
+
+export const USER_DAILY_ACTIVITY_API = {
+    ALL_USER_DAILY_ACTIVITIES: (params: any) => {
+        const query = Object.keys(params)
+            .filter(
+                (key) =>
+                    params[key] !== undefined &&
+                    params[key] !== null &&
+                    params[key] !== 0 &&
+                    params[key] !== ''
+            )
+            .map((key) => `${key}=${params[key]}`)
+            .join('&')
+        return `/user-daily-activities?${query}`
+    },
+    CREATE_USER_DAILY_ACTIVITY: '/user-daily-activities',
+    UPDATE_USER_DAILY_ACTIVITY: (userId: number | string) =>
+        `/user-daily-activities/${userId}`,
 }
