@@ -3,46 +3,37 @@ import { ref } from 'vue'
 
 import type { TabsPaneContext } from 'element-plus'
 import { VideoPlay } from '@element-plus/icons-vue'
+import { ElNotification } from 'element-plus'
+import CourseService from '@/services/course'
+import { CourseResponse } from '@/interfaces/course'
+
 
 const activeName = ref('1')
+const loading = ref(false)
+const recommendCourses = ref<CourseResponse[]>([])
 
 const handleClick = (tab: TabsPaneContext, event: Event) => {
     console.log(tab, event)
 }
 
-const courses = ref([
-    {
-        id: 1,
-        name: 'Basic Greetings',
-        description: 'Learn how to greet people in Japanese with confidence.',
-        image: 'https://placehold.co/300x180?text=Greetings',
-        categories: ['Beginner', 'Speaking'],
-    },
-    {
-        id: 2,
-        name: 'Hiragana Mastery',
-        description:
-            'Memorize the full set of Hiragana characters step by step.',
-        image: 'https://placehold.co/300x180?text=Hiragana',
-        categories: ['Beginner', 'Writing'],
-    },
-    {
-        id: 3,
-        name: 'Numbers & Counting',
-        description:
-            'Learn to count in Japanese and use numbers in daily life.',
-        image: 'https://placehold.co/300x180?text=Numbers',
-        categories: ['Beginner', 'Vocabulary'],
-    },
-    {
-        id: 4,
-        name: 'Basic Grammar',
-        description:
-            'Understand simple Japanese grammar rules for building sentences.',
-        image: 'https://placehold.co/300x180?text=Grammar',
-        categories: ['Beginner', 'Grammar'],
-    },
-])
+const fetchTopCourses = async (params: any) => {
+    loading.value = true
+    try {
+        const response = await CourseService.topByCategories(params)
+        if (response.status === 200) {
+            recommendCourses.value = response.data
+        }
+    } catch (error) {
+        ElNotification({
+            title: 'Error',
+            message: 'Loading courses failed. Please try again.',
+            type: 'error',
+        })
+    } finally {
+        loading.value = false
+    }
+}
+
 </script>
 
 <template>
@@ -172,7 +163,7 @@ const courses = ref([
                         <el-tab-pane label="Beginner" name="1">
                             <div class="recommend-courses">
                                 <el-card
-                                    v-for="course in courses"
+                                    v-for="course in recommendCourses"
                                     :key="course.id"
                                     shadow="hover"
                                     :body-style="{ padding: '0px' }"
