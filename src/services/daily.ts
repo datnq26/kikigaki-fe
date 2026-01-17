@@ -6,6 +6,7 @@ import {
     UpdateUserDailyActivityRequest,
     UserDailyActivityRequest,
     UserDailyActivityResponse,
+    UserDailyActivitySummaryResponse,
 } from '@/interfaces/daily'
 
 class UserDailyActivityService {
@@ -34,6 +35,12 @@ class UserDailyActivityService {
             USER_DAILY_ACTIVITY_API.UPDATE_USER_DAILY_ACTIVITY(id),
             payload
         )
+    }
+
+    async getUserDailySummary(): Promise<
+        AxiosResponse<UserDailyActivitySummaryResponse>
+    > {
+        return http.get(USER_DAILY_ACTIVITY_API.USER_DAILY_ACTIVITY_SUMMARY)
     }
 }
 

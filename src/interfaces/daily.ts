@@ -23,3 +23,8 @@ export interface UpdateUserDailyActivityRequest {
     completed_lessons: number
     study_time_minutes: number
 }
+
+export interface UserDailyActivitySummaryResponse {
+    total_completed_lessons: number
+    total_study_time_minutes: number
+}

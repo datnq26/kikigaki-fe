@@ -14,7 +14,10 @@ import DateStreak from '@/components/commons/DateStreak.vue'
 import { getStreakColor } from '@/utils/get'
 import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
 import { BASE_IMAGE_URL } from '@/constants/image'
-import { UserDailyActivityResponse } from '@/interfaces/daily'
+import {
+    UserDailyActivityResponse,
+    UserDailyActivitySummaryResponse,
+} from '@/interfaces/daily'
 import UserDailyActivityService from '@/services/daily'
 
 const user = ref({
@@ -25,7 +28,6 @@ const user = ref({
 })
 
 const authStore = useAuthenticationStore()
-const userInfo = authStore.userInfo
 
 const lessons = ref<
     Array<LessonResponse & { progress: number; locked: boolean }>
@@ -108,49 +110,10 @@ const lessons = ref<
     },
 ])
 const dailyActivities = ref<UserDailyActivityResponse[] | []>([])
-
-const stats = ref({
-    listCompleted: 12,
-    focusTimeHours: 8.5,
+const stats = ref<UserDailyActivitySummaryResponse>({
+    total_completed_lessons: 0,
+    total_study_time_minutes: 0,
 })
-
-const loginRecords: UserDailyActivityResponse[] = [
-    {
-        date: '2025-01-01',
-        completed_lessons: 2,
-        user: 1,
-        study_time_minutes: 1,
-        id: 1,
-    },
-    {
-        date: '2025-01-02',
-        completed_lessons: 1,
-        user: 1,
-        study_time_minutes: 1,
-        id: 1,
-    },
-    {
-        date: '2025-02-15',
-        completed_lessons: 4,
-        user: 1,
-        study_time_minutes: 1,
-        id: 1,
-    },
-    {
-        date: '2025-03-20',
-        completed_lessons: 3,
-        user: 1,
-        study_time_minutes: 1,
-        id: 1,
-    },
-    {
-        date: '2025-09-13',
-        completed_lessons: 2,
-        user: 1,
-        study_time_minutes: 1,
-        id: 1,
-    },
-]
 
 const fetchDailyActivities = async () => {
     try {
@@ -166,8 +129,20 @@ const fetchDailyActivities = async () => {
     }
 }
 
+const fetchDailyActivitySummary = async () => {
+    try {
+        const response = await UserDailyActivityService.getUserDailySummary()
+        if (response.status === 200) {
+            stats.value = response.data
+        }
+    } catch (e) {
+        console.log(e)
+    }
+}
+
 onMounted(() => {
     fetchDailyActivities()
+    fetchDailyActivitySummary()
 })
 </script>
 
@@ -180,12 +155,12 @@ onMounted(() => {
                 <el-card shadow="never" class="panel">
                     <div class="user">
                         <img
-                            :src="BASE_IMAGE_URL + userInfo?.avatar"
+                            :src="BASE_IMAGE_URL + authStore?.userInfo?.avatar"
                             alt="avatar"
                             class="avatar"
                         />
                         <div class="meta">
-                            <h1 class="name">{{ userInfo?.username }}</h1>
+                            <h1 class="name">{{ authStore?.userInfo?.username }}</h1>
                         </div>
                         <div style="flex-grow: 1"></div>
                         <div class="kpis">
@@ -227,7 +202,7 @@ onMounted(() => {
                             /></el-icon>
                         </div>
                         <el-text class="stat-value">
-                            {{ stats.listCompleted }}
+                            {{ stats.total_completed_lessons }}
                         </el-text>
                         <div style="font-size: 12px">+3 from last week</div>
                     </el-card>
@@ -239,7 +214,7 @@ onMounted(() => {
                             /></el-icon>
                         </div>
                         <el-text class="stat-value">
-                            {{ stats.focusTimeHours }} hrs
+                            {{ (stats.total_study_time_minutes / 60).toFixed(1) }} hrs
                         </el-text>
                         <div style="font-size: 12px">Reached daily goal</div>
                     </el-card>

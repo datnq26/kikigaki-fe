@@ -77,4 +77,5 @@ export const USER_DAILY_ACTIVITY_API = {
     CREATE_USER_DAILY_ACTIVITY: '/user-daily-activities',
     UPDATE_USER_DAILY_ACTIVITY: (userId: number | string) =>
         `/user-daily-activities/${userId}`,
+    USER_DAILY_ACTIVITY_SUMMARY: '/user-daily-activities/summary',
 }
