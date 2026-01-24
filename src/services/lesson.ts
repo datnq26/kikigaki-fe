@@ -15,6 +15,10 @@ class LessonService {
     ): Promise<AxiosResponse<LessonResponse>> {
         return await http.get(LESSON_API.LESSON_BY_ID(lessonId))
     }
+
+    async getRandomLesson(): Promise<AxiosResponse<LessonResponse>> {
+        return await http.get(LESSON_API.RANDOM_LESSON)
+    }
 }
 
 export default new LessonService()

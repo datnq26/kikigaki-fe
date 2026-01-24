@@ -1,27 +1,58 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 
-import type { TabsPaneContext } from 'element-plus'
+import type { TabPaneName } from 'element-plus'
 import { VideoPlay } from '@element-plus/icons-vue'
 import { ElNotification } from 'element-plus'
 import CourseService from '@/services/course'
 import { CourseResponse } from '@/interfaces/course'
-
+import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
+import LessonService from '@/services/lesson'
+import { LessonResponse } from '@/interfaces/lesson'
 
 const activeName = ref('1')
 const loading = ref(false)
 const recommendCourses = ref<CourseResponse[]>([])
+const randomLesson = ref<LessonResponse | null>(null)
+const loadingLesson = ref(false)
+const authStore = useAuthenticationStore()
 
-const handleClick = (tab: TabsPaneContext, event: Event) => {
-    console.log(tab, event)
+const streakDays = computed(() => {
+    return authStore?.userInfo?.current_streak_days ?? 0
+})
+
+const fullName = computed(() => {
+    const firstName = authStore?.userInfo?.first_name || ''
+    const lastName = authStore?.userInfo?.last_name || ''
+    return `${firstName} ${lastName}`.trim() || 'LinguaLearner!'
+})
+
+const categoryMap: Record<string, string> = {
+    '1': 'Beginner',
+    '2': 'Intermediate',
+    '3': 'Advanced',
+    '4': 'JLPT N5 Prep',
+    '5': 'Business Japanese',
+    '6': 'Cultural Insights',
+    '7': 'Slice of Life Anime',
+    '8': 'Fantasy Anime',
 }
 
-const fetchTopCourses = async (params: any) => {
+const handleTabChange = (name: TabPaneName) => {
+    const category = categoryMap[String(name)]
+    fetchCourses(category)
+}
+
+const fetchCourses = async (category?: string) => {
     loading.value = true
     try {
-        const response = await CourseService.topByCategories(params)
+        const response = await CourseService.getAllCourses({
+            limit: 4,
+            offset: 0,
+            categories: category ?? null,
+        })
         if (response.status === 200) {
-            recommendCourses.value = response.data
+            recommendCourses.value = (response.data.results ?? []).slice(0, 4)
         }
     } catch (error) {
         ElNotification({
@@ -34,6 +65,28 @@ const fetchTopCourses = async (params: any) => {
     }
 }
 
+const fetchRandomLesson = async () => {
+    loadingLesson.value = true
+    try {
+        const response = await LessonService.getRandomLesson()
+        if (response.status === 200) {
+            randomLesson.value = response.data
+        }
+    } catch (error) {
+        ElNotification({
+            title: 'Error',
+            message: 'Loading random lesson failed. Please try again.',
+            type: 'error',
+        })
+    } finally {
+        loadingLesson.value = false
+    }
+}
+
+onMounted(() => {
+    fetchCourses(categoryMap[activeName.value])
+    fetchRandomLesson()
+})
 </script>
 
 <template>
@@ -46,7 +99,7 @@ const fetchTopCourses = async (params: any) => {
                             >Welcome back,</el-text
                         >
                         <el-text tag="b" 　style="color: #44A248FF;"
-                            >LinguaLearner!</el-text
+                            >{{ fullName }}</el-text
                         ></span
                     >
                 </div>
@@ -72,7 +125,7 @@ const fetchTopCourses = async (params: any) => {
                             <el-text
                                 class="highlight-color"
                                 style="color: #f88379"
-                                >15-Days Streak</el-text
+                                >{{ streakDays }}-Days Streak</el-text
                             >
                         </div>
                         <div>
@@ -112,11 +165,11 @@ const fetchTopCourses = async (params: any) => {
                     >Today's Listening Lesson</el-text
                 >
             </div>
-            <el-card class="card today-lesson-card">
-                <div>
+            <el-card v-loading="loadingLesson" class="card today-lesson-card">
+                <div v-if="randomLesson">
                     <el-image
                         style="width: 100%; max-width: 100%; height: 400px"
-                        src="https://preview.redd.it/suggestion-make-this-the-new-banner-of-r-onepiece-from-v0-iodwygpkys9b1.jpg?width=1080&crop=smart&auto=webp&s=cc51caadcdaf492ea2164c08371a59252bfb3349"
+                        :src="randomLesson.image"
                         fit="fill"
                     />
                 </div>
@@ -158,10 +211,10 @@ const fetchTopCourses = async (params: any) => {
                     <el-tabs
                         v-model="activeName"
                         class="tabs"
-                        @tab-click="handleClick"
+                        @tab-change="handleTabChange"
                     >
                         <el-tab-pane label="Beginner" name="1">
-                            <div class="recommend-courses">
+                            <div v-loading="loading" class="recommend-courses">
                                 <el-card
                                     v-for="course in recommendCourses"
                                     :key="course.id"
@@ -207,27 +260,335 @@ const fetchTopCourses = async (params: any) => {
                                 </el-card>
                             </div>
                         </el-tab-pane>
-                        <el-tab-pane label="Intermediate" name="2"
-                            >Config</el-tab-pane
-                        >
-                        <el-tab-pane label="Advanced" name="3"
-                            >Role</el-tab-pane
-                        >
-                        <el-tab-pane label="JLPT N5 Prep" name="4"
-                            >Task</el-tab-pane
-                        >
-                        <el-tab-pane label="Business Japanese" name="5"
-                            >Task</el-tab-pane
-                        >
-                        <el-tab-pane label="Cultural Insights" name="6"
-                            >Task</el-tab-pane
-                        >
-                        <el-tab-pane label="Slice of Life Anime" name="7"
-                            >Task</el-tab-pane
-                        >
-                        <el-tab-pane label="Fantasy Anime" name="8"
-                            >Task</el-tab-pane
-                        >
+                        <el-tab-pane label="Intermediate" name="2">
+                            <div v-loading="loading" class="recommend-courses">
+                                <el-card
+                                    v-for="course in recommendCourses"
+                                    :key="course.id"
+                                    shadow="hover"
+                                    :body-style="{ padding: '0px' }"
+                                    class="course-card"
+                                >
+                                    <el-image
+                                        :src="course.image"
+                                        class="card-image"
+                                        :alt="course.name"
+                                        fit="fill"
+                                    />
+                                    <div class="card-content">
+                                        <h3 class="title">{{ course.name }}</h3>
+                                        <p class="description">
+                                            {{ course.description }}
+                                        </p>
+                                        <div class="meta">
+                                            <el-tag
+                                                v-for="(
+                                                    category, index
+                                                ) in course.categories"
+                                                :key="index"
+                                                size="small"
+                                                type="info"
+                                                effect="plain"
+                                                class="tag-category"
+                                            >
+                                                {{ category }}
+                                            </el-tag>
+                                        </div>
+                                        <div class="card-footer">
+                                            <el-link
+                                                type="success"
+                                                :underline="false"
+                                                class="learn-now"
+                                            >
+                                                Learn now
+                                            </el-link>
+                                        </div>
+                                    </div>
+                                </el-card>
+                            </div>
+                        </el-tab-pane>
+                        <el-tab-pane label="Advanced" name="3">
+                            <div v-loading="loading" class="recommend-courses">
+                                <el-card
+                                    v-for="course in recommendCourses"
+                                    :key="course.id"
+                                    shadow="hover"
+                                    :body-style="{ padding: '0px' }"
+                                    class="course-card"
+                                >
+                                    <el-image
+                                        :src="course.image"
+                                        class="card-image"
+                                        :alt="course.name"
+                                        fit="fill"
+                                    />
+                                    <div class="card-content">
+                                        <h3 class="title">{{ course.name }}</h3>
+                                        <p class="description">
+                                            {{ course.description }}
+                                        </p>
+                                        <div class="meta">
+                                            <el-tag
+                                                v-for="(
+                                                    category, index
+                                                ) in course.categories"
+                                                :key="index"
+                                                size="small"
+                                                type="info"
+                                                effect="plain"
+                                                class="tag-category"
+                                            >
+                                                {{ category }}
+                                            </el-tag>
+                                        </div>
+                                        <div class="card-footer">
+                                            <el-link
+                                                type="success"
+                                                :underline="false"
+                                                class="learn-now"
+                                            >
+                                                Learn now
+                                            </el-link>
+                                        </div>
+                                    </div>
+                                </el-card>
+                            </div>
+                        </el-tab-pane>
+                        <el-tab-pane label="JLPT N5 Prep" name="4">
+                            <div v-loading="loading" class="recommend-courses">
+                                <el-card
+                                    v-for="course in recommendCourses"
+                                    :key="course.id"
+                                    shadow="hover"
+                                    :body-style="{ padding: '0px' }"
+                                    class="course-card"
+                                >
+                                    <el-image
+                                        :src="course.image"
+                                        class="card-image"
+                                        :alt="course.name"
+                                        fit="fill"
+                                    />
+                                    <div class="card-content">
+                                        <h3 class="title">{{ course.name }}</h3>
+                                        <p class="description">
+                                            {{ course.description }}
+                                        </p>
+                                        <div class="meta">
+                                            <el-tag
+                                                v-for="(
+                                                    category, index
+                                                ) in course.categories"
+                                                :key="index"
+                                                size="small"
+                                                type="info"
+                                                effect="plain"
+                                                class="tag-category"
+                                            >
+                                                {{ category }}
+                                            </el-tag>
+                                        </div>
+                                        <div class="card-footer">
+                                            <el-link
+                                                type="success"
+                                                :underline="false"
+                                                class="learn-now"
+                                            >
+                                                Learn now
+                                            </el-link>
+                                        </div>
+                                    </div>
+                                </el-card>
+                            </div>
+                        </el-tab-pane>
+                        <el-tab-pane label="Business Japanese" name="5">
+                            <div v-loading="loading" class="recommend-courses">
+                                <el-card
+                                    v-for="course in recommendCourses"
+                                    :key="course.id"
+                                    shadow="hover"
+                                    :body-style="{ padding: '0px' }"
+                                    class="course-card"
+                                >
+                                    <el-image
+                                        :src="course.image"
+                                        class="card-image"
+                                        :alt="course.name"
+                                        fit="fill"
+                                    />
+                                    <div class="card-content">
+                                        <h3 class="title">{{ course.name }}</h3>
+                                        <p class="description">
+                                            {{ course.description }}
+                                        </p>
+                                        <div class="meta">
+                                            <el-tag
+                                                v-for="(
+                                                    category, index
+                                                ) in course.categories"
+                                                :key="index"
+                                                size="small"
+                                                type="info"
+                                                effect="plain"
+                                                class="tag-category"
+                                            >
+                                                {{ category }}
+                                            </el-tag>
+                                        </div>
+                                        <div class="card-footer">
+                                            <el-link
+                                                type="success"
+                                                :underline="false"
+                                                class="learn-now"
+                                            >
+                                                Learn now
+                                            </el-link>
+                                        </div>
+                                    </div>
+                                </el-card>
+                            </div>
+                        </el-tab-pane>
+                        <el-tab-pane label="Cultural Insights" name="6">
+                            <div v-loading="loading" class="recommend-courses">
+                                <el-card
+                                    v-for="course in recommendCourses"
+                                    :key="course.id"
+                                    shadow="hover"
+                                    :body-style="{ padding: '0px' }"
+                                    class="course-card"
+                                >
+                                    <el-image
+                                        :src="course.image"
+                                        class="card-image"
+                                        :alt="course.name"
+                                        fit="fill"
+                                    />
+                                    <div class="card-content">
+                                        <h3 class="title">{{ course.name }}</h3>
+                                        <p class="description">
+                                            {{ course.description }}
+                                        </p>
+                                        <div class="meta">
+                                            <el-tag
+                                                v-for="(
+                                                    category, index
+                                                ) in course.categories"
+                                                :key="index"
+                                                size="small"
+                                                type="info"
+                                                effect="plain"
+                                                class="tag-category"
+                                            >
+                                                {{ category }}
+                                            </el-tag>
+                                        </div>
+                                        <div class="card-footer">
+                                            <el-link
+                                                type="success"
+                                                :underline="false"
+                                                class="learn-now"
+                                            >
+                                                Learn now
+                                            </el-link>
+                                        </div>
+                                    </div>
+                                </el-card>
+                            </div>
+                        </el-tab-pane>
+                        <el-tab-pane label="Slice of Life Anime" name="7">
+                            <div v-loading="loading" class="recommend-courses">
+                                <el-card
+                                    v-for="course in recommendCourses"
+                                    :key="course.id"
+                                    shadow="hover"
+                                    :body-style="{ padding: '0px' }"
+                                    class="course-card"
+                                >
+                                    <el-image
+                                        :src="course.image"
+                                        class="card-image"
+                                        :alt="course.name"
+                                        fit="fill"
+                                    />
+                                    <div class="card-content">
+                                        <h3 class="title">{{ course.name }}</h3>
+                                        <p class="description">
+                                            {{ course.description }}
+                                        </p>
+                                        <div class="meta">
+                                            <el-tag
+                                                v-for="(
+                                                    category, index
+                                                ) in course.categories"
+                                                :key="index"
+                                                size="small"
+                                                type="info"
+                                                effect="plain"
+                                                class="tag-category"
+                                            >
+                                                {{ category }}
+                                            </el-tag>
+                                        </div>
+                                        <div class="card-footer">
+                                            <el-link
+                                                type="success"
+                                                :underline="false"
+                                                class="learn-now"
+                                            >
+                                                Learn now
+                                            </el-link>
+                                        </div>
+                                    </div>
+                                </el-card>
+                            </div>
+                        </el-tab-pane>
+                        <el-tab-pane label="Fantasy Anime" name="8">
+                            <div v-loading="loading" class="recommend-courses">
+                                <el-card
+                                    v-for="course in recommendCourses"
+                                    :key="course.id"
+                                    shadow="hover"
+                                    :body-style="{ padding: '0px' }"
+                                    class="course-card"
+                                >
+                                    <el-image
+                                        :src="course.image"
+                                        class="card-image"
+                                        :alt="course.name"
+                                        fit="fill"
+                                    />
+                                    <div class="card-content">
+                                        <h3 class="title">{{ course.name }}</h3>
+                                        <p class="description">
+                                            {{ course.description }}
+                                        </p>
+                                        <div class="meta">
+                                            <el-tag
+                                                v-for="(
+                                                    category, index
+                                                ) in course.categories"
+                                                :key="index"
+                                                size="small"
+                                                type="info"
+                                                effect="plain"
+                                                class="tag-category"
+                                            >
+                                                {{ category }}
+                                            </el-tag>
+                                        </div>
+                                        <div class="card-footer">
+                                            <el-link
+                                                type="success"
+                                                :underline="false"
+                                                class="learn-now"
+                                            >
+                                                Learn now
+                                            </el-link>
+                                        </div>
+                                    </div>
+                                </el-card>
+                            </div>
+                        </el-tab-pane>
                     </el-tabs>
                 </div>
             </div>
@@ -312,8 +673,8 @@ const fetchTopCourses = async (params: any) => {
 }
 
 .recommend-courses {
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
 }
 
@@ -328,18 +689,30 @@ const fetchTopCourses = async (params: any) => {
 }
 
 .course-card {
-    max-width: 356px;
-    max-height: 312px;
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
     cursor: pointer;
     border-radius: 8px;
     overflow: hidden;
     transition:
         transform 0.2s ease-in-out,
         box-shadow 0.2s ease-in-out;
+    box-sizing: border-box;
+    border: 1px solid #ebebeaff;
+    display: flex;
+    flex-direction: column;
 }
 
 .course-card:hover {
     transform: translateY(-4px);
+}
+
+:deep(.course-card .el-card__body) {
+    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .card-image {
@@ -351,6 +724,9 @@ const fetchTopCourses = async (params: any) => {
 
 .card-content {
     padding: 12px 17px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .title {
@@ -363,6 +739,7 @@ const fetchTopCourses = async (params: any) => {
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
 }
 
@@ -375,6 +752,7 @@ const fetchTopCourses = async (params: any) => {
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
 }
 
@@ -409,6 +787,7 @@ const fetchTopCourses = async (params: any) => {
     justify-content: space-between;
     align-items: center;
     padding-top: 12px;
+    margin-top: auto;
 }
 
 .meta {
@@ -442,5 +821,23 @@ const fetchTopCourses = async (params: any) => {
 
 div:has(.text-title) {
     margin-bottom: 12px;
+}
+
+@media (max-width: 1200px) {
+    .recommend-courses {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .recommend-courses {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .recommend-courses {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
