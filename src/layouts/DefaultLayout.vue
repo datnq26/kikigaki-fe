@@ -1,10 +1,16 @@
 <script lang="ts" setup>
+import { onMounted } from 'vue'
 import HeaderDesktop from '@/components/commons/HeaderDesktop.vue'
 import HeaderMobile from '@/components/commons/HeaderMobile.vue'
 import { useAuthenticationStore } from '@/stores/useAuthenticationStore'
 
 const authenticationStore = useAuthenticationStore()
-authenticationStore.loadFromServer()
+
+onMounted(async () => {
+    if (!authenticationStore.userInfo) {
+        await authenticationStore.loadFromServer()
+    }
+})
 </script>
 
 <template>

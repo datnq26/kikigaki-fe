@@ -7,7 +7,9 @@ import {
     UpdateAccountResponse,
     UpdateAvatarRequest,
     UpdateAvatarResponse,
+    LeaderboardUser,
 } from '@/interfaces/user'
+import { PaginationResponse } from '@/interfaces/commons'
 
 class UserService {
     async getCurrentUser(): Promise<AxiosResponse<any>> {
@@ -29,6 +31,18 @@ class UserService {
             return await http.patch(USER_API.UPDATE_AVATAR, formData)
         }
         return await http.patch(USER_API.UPDATE_AVATAR)
+    }
+
+    async getTopUsers(
+        params?: any
+    ): Promise<AxiosResponse<LeaderboardUser[]>> {
+        return await http.get(USER_API.TOP_USERS(params || {}))
+    }
+
+    async getLeaderboard(
+        params?: any
+    ): Promise<AxiosResponse<PaginationResponse<LeaderboardUser>>> {
+        return await http.get(USER_API.LEADERBOARD(params || {}))
     }
 }
 

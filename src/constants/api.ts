@@ -18,6 +18,32 @@ export const USER_API = {
     CHANGE_PASSWORD: (userId: any) => `/user/change-password/${userId}`,
     UPDATE_ACCOUNT: '/user/update-account',
     UPDATE_AVATAR: '/user/update-avatar',
+    TOP_USERS: (params: any) => {
+        const query = Object.keys(params)
+            .filter(
+                (key) =>
+                    params[key] !== undefined &&
+                    params[key] !== null &&
+                    params[key] !== 0 &&
+                    params[key] !== ''
+            )
+            .map((key) => `${key}=${params[key]}`)
+            .join('&')
+        return `/user/top-users?${query}`
+    },
+    LEADERBOARD: (params: any) => {
+        const query = Object.keys(params)
+            .filter(
+                (key) =>
+                    params[key] !== undefined &&
+                    params[key] !== null &&
+                    params[key] !== 0 &&
+                    params[key] !== ''
+            )
+            .map((key) => `${key}=${params[key]}`)
+            .join('&')
+        return query ? `/user/leaderboard?${query}` : '/user/leaderboard'
+    },
 }
 
 export const LESSON_API = {
@@ -28,6 +54,7 @@ export const LESSON_API = {
         return `/lessons`
     },
     LESSON_BY_ID: (lessonId: number | string) => `/lessons/${lessonId}`,
+    RANDOM_LESSON: '/lessons/random',
 }
 
 export const COURSE_API = {

@@ -10,6 +10,7 @@ import { PATHS } from '@/router/paths'
 import ListCoursesView from '@/views/commons/ListCoursesView.vue'
 import CourseDetailView from '@/views/commons/CourseDetailView.vue'
 import AccountSettingView from '@/views/commons/AccountSettingView.vue'
+import TopUserView from '@/views/commons/TopUserView.vue'
 
 const router = createRouter({
     // @ts-ignore
@@ -23,6 +24,12 @@ const router = createRouter({
                     path: PATHS.HOME,
                     component: HomeView,
                     name: 'home',
+                    meta: { requiresAuth: true },
+                },
+                {
+                    path: PATHS.TOP_USERS,
+                    component: TopUserView,
+                    name: 'top-users',
                     meta: { requiresAuth: true },
                 },
                 {
